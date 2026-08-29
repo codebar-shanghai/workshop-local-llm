@@ -1,0 +1,68 @@
+name: Build PDFs
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build LaTeX documents
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Compile PDFs
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # v4.1.0
+        with:
+          root_file: |
+            notes.tex
+            notes-zh_hans.tex
+          texlive_version: 2026
+          latexmk_use_lualatex: true
+          latexmk_shell_escape: true
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: notes-pdfs
+          path: |
+            notes.pdf
+            notes-zh_hans.pdf
+          if-no-files-found: error
+
+      - name: Publish prerelease from main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          tag_name: preview-${{ github.sha }}
+          name: Preview ${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          files: |
+            notes.pdf
+            notes-zh_hans.pdf
+          body: |
+            Preview build from `${{ github.sha }}`.
+
+            This prerelease is created automatically for ordinary commits on `main`.
+
+      - name: Publish release from version tag
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          prerelease: false
+          make_latest: true
+          generate_release_notes: true
+          files: |
+            notes.pdf
+            notes-zh_hans.pdf
