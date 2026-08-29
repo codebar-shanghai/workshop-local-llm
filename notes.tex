@@ -28,6 +28,20 @@
 % Clickable cross-references and links. Keep this near the end of the preamble.
 \usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
 
+\title{Workshop Notes: Running an LLM Locally}
+\author{Yang Shen}
+\date{}
+
 \begin{document}
-\null
+
+\maketitle
+
+\section{Overview}
+
+This document shows how to run a small language model locally and use it through an agentic command-line tool. The examples use \texttt{llama.cpp} as the local inference runtime, Qwen3-0.6B as a small model for practice, and \texttt{pi} as the interface for agent-style interaction.
+
+The goal is not to build the fastest or most capable local AI system. The goal is to learn the general workflow: install the required tools, download a model file, start a local model server, connect an application to it, and try a few tasks. The model is intentionally small so the steps are accessible on ordinary personal computers.
+
+The notes are split into two main parts. The quick start gives the shortest path from setup to a working local model. The later sections explain the tools, file formats, commands, and tradeoffs in more detail.
+
 \end{document}

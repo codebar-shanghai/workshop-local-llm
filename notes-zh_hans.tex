@@ -29,6 +29,20 @@
 % Clickable cross-references and links. Keep this near the end of the preamble.
 \usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
 
+\title{工作坊讲义：本地运行大语言模型}
+\author{Yang Shen}
+\date{}
+
 \begin{document}
-\null
+
+\maketitle
+
+\section{概述}
+
+本文档演示如何在本地运行小型语言模型，并通过智能体命令行工具使用它。示例中使用 \texttt{llama.cpp} 作为本地推理运行时，Qwen3-0.6B 作为练习用的小型模型，以及 \texttt{pi} 作为智能体式交互的界面。
+
+本教程的目标不是构建速度最快或能力最强的本地 AI 系统，而是学习通用工作流：安装所需的工具、下载模型文件、启动本地模型服务器、将应用连接到它，并尝试一些任务。模型被故意选得较小，以便在普通个人电脑上即可操作。
+
+本文档分为两个主要部分。快速入门部分给出从设置到运行本地模型的最短路径。后面的章节更详细地解释工具、文件格式、命令以及各种权衡。
+
 \end{document}
