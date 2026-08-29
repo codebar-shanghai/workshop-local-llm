@@ -44,10 +44,12 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
-          tag_name: preview-${{ github.sha }}
-          name: Preview ${{ github.sha }}
+          tag_name: preview
+          target_commitish: ${{ github.sha }}
+          name: Development Preview
           prerelease: true
           make_latest: false
+          replace_assets: true
           files: |
             notes.pdf
             notes-zh_hans.pdf
