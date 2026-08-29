@@ -1,0 +1,32 @@
+%&latex
+% !TeX program = lualatex
+% Use A4 explicitly so output is consistent across systems.
+\documentclass[a4paper]{article}
+
+% Page layout.
+\usepackage[margin=1in]{geometry}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+
+% Fonts.
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Courier New}
+
+% Syntax-highlighted code blocks.
+% Compile with shell escape enabled when using minted.
+\usepackage{xcolor}
+\usepackage{minted}
+\setminted{
+  fontsize=\small,
+  breaklines=true,
+  autogobble=true,
+  frame=single,
+  framesep=2mm
+}
+
+% Clickable cross-references and links. Keep this near the end of the preamble.
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
+
+\begin{document}
+\end{document}
