@@ -79,6 +79,10 @@ jobs:
           docker run --rm "$BASE_IMAGE_ARCH" node --version
           docker run --rm "$BASE_IMAGE_ARCH" which npm
           docker run --rm "$BASE_IMAGE_ARCH" npm --version
+          docker run --rm "$BASE_IMAGE_ARCH" which fd
+          docker run --rm "$BASE_IMAGE_ARCH" fd --version
+          docker run --rm "$BASE_IMAGE_ARCH" which rg
+          docker run --rm "$BASE_IMAGE_ARCH" rg --version
 
       - name: Push image
         run: docker push "$BASE_IMAGE_ARCH"
@@ -93,6 +97,8 @@ jobs:
           pi_version="$(version_of pi)"
           node_version="$(version_of node)"
           npm_version="$(version_of npm)"
+          fd_version="$(version_of fd)"
+          rg_version="$(version_of rg)"
 
           {
             echo "### $PLATFORM"
@@ -104,6 +110,8 @@ jobs:
             echo "| Pi | \`$pi_version\` |"
             echo "| Node.js | \`$node_version\` |"
             echo "| npm | \`$npm_version\` |"
+            echo "| fd | \`$fd_version\` |"
+            echo "| ripgrep | \`$rg_version\` |"
           } > "release-notes-${{ matrix.suffix }}.md"
 
           cat "release-notes-${{ matrix.suffix }}.md" >> "$GITHUB_STEP_SUMMARY"
