@@ -28,8 +28,10 @@ jobs:
             notes.tex
             notes-zh_hans.tex
           texlive_version: 2026
+          os: debian
           latexmk_use_lualatex: true
           latexmk_shell_escape: true
+          extra_system_packages: fonts-noto-mono
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v7
