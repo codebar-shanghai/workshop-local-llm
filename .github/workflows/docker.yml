@@ -1,0 +1,188 @@
+name: Manual Docker Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+
+    outputs:
+      base_image: ${{ steps.metadata.outputs.base_image }}
+      base_image_latest: ${{ steps.metadata.outputs.base_image_latest }}
+      base_image_versioned: ${{ steps.metadata.outputs.base_image_versioned }}
+      image_tag: ${{ steps.metadata.outputs.image_tag }}
+      release_tag: ${{ steps.metadata.outputs.release_tag }}
+
+    steps:
+      - name: Derive image names
+        id: metadata
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          image_tag="$(date -u +%Y%m%d%H%M)"
+          base_image="ghcr.io/${owner}/pi-docker-image"
+
+          echo "base_image=${base_image}" >> "$GITHUB_OUTPUT"
+          echo "base_image_latest=${base_image}:latest" >> "$GITHUB_OUTPUT"
+          echo "base_image_versioned=${base_image}:${image_tag}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${image_tag}" >> "$GITHUB_OUTPUT"
+          echo "release_tag=pi-${image_tag}" >> "$GITHUB_OUTPUT"
+
+  build-base:
+    needs: prepare
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            suffix: amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            suffix: arm64
+
+    runs-on: ${{ matrix.runner }}
+
+    env:
+      BASE_IMAGE_ARCH: ${{ needs.prepare.outputs.base_image }}:${{ needs.prepare.outputs.image_tag }}-${{ matrix.suffix }}
+      PLATFORM: ${{ matrix.platform }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image
+        run: |
+          docker build \
+            --platform "$PLATFORM" \
+            -f Dockerfile \
+            -t "$BASE_IMAGE_ARCH" \
+            .
+
+      - name: Check tools in image
+        run: |
+          docker run --rm "$BASE_IMAGE_ARCH" which pi
+          docker run --rm "$BASE_IMAGE_ARCH" pi --version
+          docker run --rm "$BASE_IMAGE_ARCH" which node
+          docker run --rm "$BASE_IMAGE_ARCH" node --version
+          docker run --rm "$BASE_IMAGE_ARCH" which npm
+          docker run --rm "$BASE_IMAGE_ARCH" npm --version
+
+      - name: Push image
+        run: docker push "$BASE_IMAGE_ARCH"
+
+      - name: Generate platform release notes
+        run: |
+          version_of() {
+            docker run --rm "$BASE_IMAGE_ARCH" "$@" --version 2>&1 \
+              | sed -n '1p'
+          }
+
+          pi_version="$(version_of pi)"
+          node_version="$(version_of node)"
+          npm_version="$(version_of npm)"
+
+          {
+            echo "### $PLATFORM"
+            echo
+            echo "- Image: \`$BASE_IMAGE_ARCH\`"
+            echo
+            echo "| Component | Version |"
+            echo "| --- | --- |"
+            echo "| Pi | \`$pi_version\` |"
+            echo "| Node.js | \`$node_version\` |"
+            echo "| npm | \`$npm_version\` |"
+          } > "release-notes-${{ matrix.suffix }}.md"
+
+          cat "release-notes-${{ matrix.suffix }}.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload platform release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ matrix.suffix }}
+          path: release-notes-${{ matrix.suffix }}.md
+
+  publish:
+    needs:
+      - prepare
+      - build-base
+
+    runs-on: ubuntu-24.04
+
+    env:
+      BASE_IMAGE: ${{ needs.prepare.outputs.base_image }}
+      BASE_IMAGE_LATEST: ${{ needs.prepare.outputs.base_image_latest }}
+      BASE_IMAGE_VERSIONED: ${{ needs.prepare.outputs.base_image_versioned }}
+      IMAGE_TAG: ${{ needs.prepare.outputs.image_tag }}
+      RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish multi-arch manifests
+        run: |
+          docker buildx imagetools create \
+            -t "$BASE_IMAGE_VERSIONED" \
+            "$BASE_IMAGE:${IMAGE_TAG}-amd64" \
+            "$BASE_IMAGE:${IMAGE_TAG}-arm64"
+
+          docker buildx imagetools create \
+            -t "$BASE_IMAGE_LATEST" \
+            "$BASE_IMAGE:${IMAGE_TAG}-amd64" \
+            "$BASE_IMAGE:${IMAGE_TAG}-arm64"
+
+      - name: Download platform release notes
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-notes-*
+          path: release-notes
+          merge-multiple: true
+
+      - name: Generate release notes
+        run: |
+          {
+            echo "## Pi Docker Image"
+            echo
+            echo "- Versioned image: \`$BASE_IMAGE_VERSIONED\`"
+            echo "- Moving latest image: \`$BASE_IMAGE_LATEST\`"
+            echo
+            echo "## Platform Images"
+            echo
+            echo "| Platform | Image |"
+            echo "| --- | --- |"
+            echo "| linux/amd64 | \`$BASE_IMAGE:${IMAGE_TAG}-amd64\` |"
+            echo "| linux/arm64 | \`$BASE_IMAGE:${IMAGE_TAG}-arm64\` |"
+            echo
+            echo "## Included Versions"
+            echo
+            cat release-notes/*.md
+          } > release-notes.md
+
+          cat release-notes.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
+          body_path: release-notes.md
