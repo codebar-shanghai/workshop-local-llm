@@ -427,7 +427,7 @@ Hugging Face 上同样托管了很多 GGUF 格式的模型。\texttt{ggml-org}\f
 \subsection{OpenAI 兼容的接口}
 \label{sec:api}
 
-Pi 能和 llama.cpp 一起工作，原因是 llama.cpp 实现了 OpenAI 兼容的接口，而 \texttt{models.json} 告诉 Pi 如何连接到模型服务器。您可以在编辑器中打开 \texttt{models.json} 文件查看配置。您也可以访问 \url{https://pi.dev/docs/latest/models} 查看完整的配置说明。这里我们只看几个比较重要的设置：
+Pi 能和 llama.cpp 一起工作，原因是 llama.cpp 实现了 OpenAI 兼容的接口，而配置文件 \texttt{models.json} 告诉 Pi 如何连接到模型服务器。您可以在编辑器中打开 \texttt{models.json} 文件查看配置。您也可以访问 \url{https://pi.dev/docs/latest/models} 查看完整的配置说明。这里我们只看几个比较重要的设置：
 
 \begin{itemize}
 \item \texttt{api}：OpenAI 兼容的 API 并不是唯一被广泛使用的格式。如果您希望让 Pi 使用其他接口格式，请查阅 Pi 的文档。
