@@ -6,12 +6,15 @@
 % Page layout.
 \usepackage[margin=1in]{geometry}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.6em}
+\setlength{\parskip}{0.5em}
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=0pt, parsep=0pt, topsep=0.4em}
+\setlist[enumerate]{itemsep=0.2em, parsep=0pt, topsep=0.4em}
 
 % Fonts.
 \usepackage{fontspec}
 \setmainfont{TeX Gyre Termes}
-\setmonofont{Noto Sans Mono}
+\setmonofont[Scale=0.85]{Noto Sans Mono}
 \newfontfamily{\treefont}{Noto Sans Mono}
 
 % Syntax-highlighted code blocks.
@@ -66,7 +69,7 @@ In this workshop, we will provide these files if you have not downloaded them ye
 \item \verb|Qwen3-0.6B-UD-IQ1_S.gguf|
 \item \verb|Qwen3-0.6B-UD-Q4_K_XL.gguf|
 \item \texttt{Qwen3-0.6B-BF16.gguf}
-\item \texttt{model.json}
+\item \texttt{models.json}
 \end{itemize}
 
 The download links will be shared during the workshop.
@@ -75,7 +78,7 @@ The download links will be shared during the workshop.
 
 You do not have to use Docker to run an LLM locally. In this workshop, we use Docker to make setup easier. A Docker image is like a ready-made box. It already contains the tools and settings we need. You do not need to install each part by hand.
 
-Docker also keeps the workshop tools separate from the rest of your system. After the workshop, you can remove the images and containers easily. In a later section, we will introduce how to set up the runtime without Docker. We will also talk about why Docker can still be useful.
+Docker also keeps the workshop tools separate from the rest of your system. After the workshop, you can remove the images and containers easily. In a later section, we will introduce how to set up the runtime without Docker. We will also talk about why Docker can still be useful in Section~\ref{sec:Docker}.
 
 \subsubsection{Install Docker Desktop on Windows}
 
@@ -84,7 +87,7 @@ Official guide: \url{https://docs.docker.com/desktop/setup/install/windows-insta
 The general steps are:
 
 \begin{enumerate}
-\item Install WSL.\footnote{WSL stands for Windows Subsystem for Linux. It's a component available on Windows 10 and 11. It is a backend for Docker on Windows. It is outside the scope of this workshop so we are not going to talk the details of it.} First, check whether WSL is installed, open \textbf{PowerShell} or \textbf{Windows Command Prompt} and run this command:
+\item Install WSL.\footnote{WSL stands for Windows Subsystem for Linux. It's a component available on Windows 10 and 11. It is a backend for Docker on Windows. It is outside the scope of this workshop so we will not explain it in detail.} First, check whether WSL is installed. Open \textbf{PowerShell} or \textbf{Windows Command Prompt} and run this command:
 
 \begin{minted}{bash}
 wsl --version
@@ -96,7 +99,7 @@ If you can see lines like "WSL version", then WSL is ready. Otherwise, open Powe
 wsl --install
 \end{minted}
 
-This might take some time. After the installation, run \verb|wsl --version| again. If it shows the version information, you can proceed to the next step. If an error blocks you from installing WSL, please refer to PLACEHOLDER.
+This might take some time. After the installation, run \verb|wsl --version| again. If it shows the version information, you can proceed to the next step. If an error blocks you from installing WSL, please refer to Section~\ref{sec:llama.cpp} to see how to run llama.cpp without Docker.
 
 \item Double-click \texttt{Docker Desktop Installer.exe}. Keep the default configuration:
 
@@ -125,7 +128,7 @@ This might take some time. After the installation, run \verb|wsl --version| agai
 
 Official guide: \url{https://docs.docker.com/desktop/setup/install/mac-install/}
 
-Make sure your macOS version is at least \texttt{14.x}, and your Mac has at least 4 GB of RAM. Then choose the correct installer. If your Mac uses Apple silicon, such as an M1, M2, ..., M6 chip, choose \texttt{Docker Desktop for Mac With Apple silicon}. Otherwise choose \texttt{Docker Desktop for Mac with Intel chip}.
+Make sure your macOS version is at least \texttt{14.x}, and your Mac has at least 4 GB of RAM. Then choose the correct installer. If your Mac uses Apple silicon, such as an M1, M2, ..., M6 chip, choose \texttt{Docker Desktop for Mac With Apple silicon}. Otherwise, choose \texttt{Docker Desktop for Mac with Intel chip}.
 
 \begin{enumerate}
 \item Double-click the downloaded \texttt{.dmg} file, then drag the icon to the \textbf{Applications} folder.
@@ -171,10 +174,13 @@ In this workshop, we use \textbf{Qwen3-0.6B}. We provide three model files:
 \begin{itemize}
 \item \texttt{Qwen3-0.6B-UD-Q4\_K\_XL.gguf}: use this one if possible. The commands in these notes use this file.
 \item \texttt{Qwen3-0.6B-UD-IQ1\_S.gguf}: use this one if \texttt{Q4\_K\_XL} is still too large for your computer. You will need to update the model filename in the commands.
-\item \texttt{Qwen3-0.6B-BF16.gguf}: try this one later if your computer has more free RAM. It keeps more precision, but it needs more memory. We will explain the names later.
+\item \texttt{Qwen3-0.6B-BF16.gguf}: try this one later if your computer has more free RAM. It keeps more precision, but it needs more memory.
 \end{itemize}
 
+We will explain the names in Section~\ref{sec:gguf}.
+
 \subsection{Run the Language Model}
+\label{sec:run-llama.cpp}
 
 The commands below are split into several lines to make them easier to read. The \texttt{\textbackslash} at the end of a line means the command continues on the next line. If you prefer, you can remove the \texttt{\textbackslash} characters and write each command as one long line.
 
@@ -242,12 +248,12 @@ Create a folder for the Pi configuration. You can put it anywhere, and give it a
 Inside this folder, create another folder named \texttt{\textbf{agent}}. Then put the \texttt{\textbf{models.json}} inside the \texttt{agent} folder. The final structure should look like this:
 
 \begin{minted}[formatcom=\treefont]{text}
-~/pi-cfg
+$HOME/pi-cfg
 └── agent
     └── models.json
 \end{minted}
 
-Now start the Pi container:
+We will explain \texttt{models.json} in Section~\ref{sec:api}. Now start the Pi container. If you use macOS, use this command:
 
 \begin{minted}{bash}
 docker run --rm -it \
@@ -256,7 +262,16 @@ docker run --rm -it \
   bash
 \end{minted}
 
-If you use Linux, use this command instead.
+If you use Windows, use this command:
+
+\begin{minted}{bash}
+docker run --rm -it \
+  -v "c:\pi-cfg:/root/.pi" \
+  ghcr.io/codebar-shanghai/pi-docker-image:latest \
+  bash
+\end{minted}
+
+If you use Linux, use this command:
 
 \begin{minted}{bash}
 docker run --rm -it \
@@ -344,4 +359,112 @@ docker image rm ghcr.io/codebar-shanghai/pi-docker-image:latest
 
 You can safely remove the downloaded \texttt{*.tar.gz} files, the model files, and \texttt{models.json}. If you do not need Docker anymore, you can uninstall it too.
 
+\section{How It Works}
+
+I am also still learning about language models, but I will try to explain the main ideas in simple terms.
+
+\subsection{llama.cpp}
+\label{sec:llama.cpp}
+
+In machine learning, it is useful to know three words: model, training, and inference. A model is the file that stores what the system has learned. Training is the process of creating that model. Inference is the process of using the model to generate output.
+
+\textbf{llama.cpp} is an inference tool. It is not the only one. Other tools include vLLM, LM Studio and Ollama.
+
+When llama.cpp was created, one goal was to run language models without a GPU. This is why we did not need special hardware in the quick start. Later, llama.cpp also added support for GPUs and NPUs through CUDA, Metal, Vulkan and other backends.
+
+llama.cpp provides prebuilt binaries and Docker images. If you cannot use Docker, or do not want to use Docker, you can simply download a release from \url{https://github.com/ggml-org/llama.cpp/releases}. After that, uncompress it and start \texttt{llama-server} from the command line. You can use the same llama.cpp options we explained in Section~\ref{sec:run-llama.cpp}.
+
+\subsection{Models}
+\label{sec:models}
+
+In this workshop, we use \textbf{Qwen3-0.6B}. Qwen is a family of open-weight language models from Alibaba Cloud. Qwen3 was released in 2025. It has different model sizes, such as 0.6B and 1.7B. Here, 0.6B means 0.6 billion parameters.
+
+In simple terms, parameters are the numbers stored inside a model. A larger model usually has more parameters. It may be more capable, but it also needs more memory and more computing power.
+
+The following content in this section is not required for this workshop. It is here to give you a rough map of the current open-weight model landscape.
+
+Some recent models from the Qwen family (in 2026) are:
+
+\begin{itemize}
+\item \texttt{Qwen3.6-36B-A3B}. It was released in April 2026. This is a \textbf{MoE} model. MoE stands for \textbf{Mixture of Experts}. You can think of experts as smaller parts inside the model. This model has 256 experts, but only 9 are active for each token. So the full model is large, but each step only uses part of it.
+\item \texttt{Qwen3.8-27B}. It is a \textbf{dense} model released in August 2026, a successor to \texttt{Qwen3.6-27B}. Dense means the model uses all its parameters during inference. To run this model, you probably need a GPU with a lot of VRAM.
+\item \texttt{Qwen3-Flash-Next}. It was also released in August 2026 and is considered a preview of \texttt{Qwen4}.
+\end{itemize}
+
+There are other open-weight language models that you can find on Hugging Face.
+
+\begin{itemize}
+\item \texttt{Gemma}, released by Google DeepMind. The latest version is 4, and it also comes in different sizes, including a MoE variant \texttt{26B A4B}.
+\item \texttt{DeepSeek}. The \texttt{V4-Flash} has 284B parameters (13B activated).
+\item \texttt{GLM}, released by Zhipu. \texttt{GLM-5} has 744B parameters (40B activated).
+\item \texttt{Kimi}, released by Moonshot AI. \texttt{Kimi-K3} has 2.8T parameters (104B activated).
+\item \texttt{gpt-oss}, released by OpenAI. It has two variants. \texttt{gpt-oss-120b} has 117B parameters (5.1B activated), and \texttt{gpt-oss-20b} has 21B parameters (3.6B activated). \texttt{gpt-oss-120b} performs around the same level as \texttt{o4-mini} on some benchmarks.
+\item \texttt{Llama}, released by Meta. \texttt{Llama 4} has two variants. \texttt{Llama 4 Scout} has 109B parameters in total, with 17B active parameters and 16 experts. \texttt{Llama 4 Maverick} has 400B parameters in total, also with 17B active parameters, but with 128 experts.
+\end{itemize}
+
+You can download the models from Hugging Face in your browser. Large models are often split into many files. Hugging Face also provides a command-line tool named \texttt{hf}. You can think of it as similar to \verb|git clone|, but for downloading models. See the official guide: \url{https://huggingface.co/docs/huggingface_hub/en/guides/cli}
+
+\subsection{GGUF}
+\label{sec:gguf}
+
+Most original model files are saved in formats used by PyTorch. These files often use the extension \texttt{.safetensors}. llama.cpp uses a different format called \texttt{GGUF}. The llama.cpp project provides a script to convert models to GGUF.
+
+After conversion, there is often another step called \textbf{quantization}. Original models may use high-precision numbers, such as F32 (32-bit) or BF16 (16-bit). Quantization stores the model weights with fewer bits. For example, it may change 16-bit numbers to 4-bit numbers. This makes the model file smaller and can make inference faster. The tradeoff is that the model may become less accurate.
+
+In this workshop, we provided three model files:
+
+\begin{itemize}
+\item \texttt{Qwen3-0.6B-BF16.gguf}: this file is not quantized.
+\item \texttt{Qwen3-0.6B-UD-Q4\_K\_XL.gguf}: this file is quantized to 4-bit. \texttt{Q4} is a common choice because it balances file size and quality. \texttt{XL} describes a quantization recipe that keeps some important parts at higher precision. A more commonly seen variant is \texttt{Q4\_K\_M}.
+\item \texttt{Qwen3-0.6B-UD-IQ1\_S.gguf}: this file is quantized to 1-bit. \texttt{IQ1\_S} is very small, so it needs less memory, but the output quality may be worse.
+\end{itemize}
+
+Hugging Face also hosts many models converted to GGUF. The \texttt{ggml-org} organization provides GGUF models for llama.cpp and related tools.\footnote{\url{https://huggingface.co/ggml-org}} For example, it provides \texttt{gpt-oss-20b-GGUF}.\footnote{\url{https://huggingface.co/ggml-org/gpt-oss-20b-GGUF}}
+
+Other groups also publish GGUF models. \texttt{UD} in the model names means \textbf{Unsloth Dynamic}.\footnote{\url{https://unsloth.ai/docs/basics/dynamic-3.0-ggufs}} Unsloth AI publishes many quantized models on Hugging Face. You may see many local LLM discussions that use UD variants.
+
+As an advanced example, some models are still very large even after 1-bit or 2-bit quantization. One example is \texttt{DeepSeek V4 Flash}. Salvatore Sanfilippo\footnote{Also known as \texttt{@antirez}, creator of Redis} created \texttt{ds4}\footnote{\url{https://github.com/antirez/ds4}}, an optimized inference project mainly for Apple silicon. It is designed to run 2-bit quantized DeepSeek models on Macs with 96 GB or more RAM.
+
+This is why Section~\ref{sec:models} only gives a brief overview. I do not have a powerful computer that can run most large language models. Sometimes I use \texttt{Qwen3.6-35B-A3B-UD-Q4\_K\_M.gguf}. It reports 40 layers and 256 routed experts per layer. llama.cpp has a useful option named \texttt{--n-cpu-moe N}. This option keeps the MoE weights of the first N layers in CPU memory. This may slow down inference, but it can make a larger context window possible. If you have a GPU with 8 GB or more VRAM, and 32 GB or more RAM, you can try a quantized model such as \texttt{Qwen3.6-35B-A3B} or \texttt{gemma-4-26B-A4B} with \texttt{--n-cpu-moe}.
+
+You can also rent a cloud server with powerful dedicated GPUs if you need to run inference using large language models instead of using APIs from Anthropic, OpenAI or DeepSeek. These servers are usually billed hourly, so this can be cheaper than buying enterprise-grade GPUs.
+
+\subsection{OpenAI-compatible API}
+\label{sec:api}
+
+Pi can work with llama.cpp because llama.cpp provides an OpenAI-compatible API, and the \texttt{models.json} file tells Pi how to connect to the model server. You can open \texttt{models.json} in an editor to see the full content. You can also visit \url{https://pi.dev/docs/latest/models} for the full documentation. Here, let me point out a few important settings:
+
+\begin{itemize}
+\item \texttt{api}: OpenAI-compatible API is not the only widely used format. Check the documentation if you want to use Pi with other service providers.
+\item \texttt{baseUrl}: in this workshop, llama.cpp and Pi both run in Docker containers on the same computer. Update this URL if you run llama.cpp or Pi in a different way.
+\item \texttt{contextWindow} and \texttt{maxTokens}: these settings depend on the model you use and how you run it. Adjust these settings for your own use case.
+\end{itemize}
+
+OpenAI-compatible API means other tools can talk to inference tools that provide this API in a similar way to how they talk to OpenAI. Tools such as OpenCode, Copilot, and Qwen Code can be configured to work with llama.cpp.
+
+There are also tools that are not coding agents:
+
+\begin{itemize}
+\item Open WebUI: a general ChatGPT-like web interface
+\item AnythingLLM: a knowledge assistant with RAG support.\footnote{RAG stands for retrieval-augmented generation.}
+\item Langflow: an open-source, low-code platform for building AI workflows
+\end{itemize}
+
+This section is brief because I have not tried all of these tools yet.
+
+\subsection{Docker}
+\label{sec:Docker}
+
+Now let me answer one more question: why is Docker still useful when you run language models locally?
+
+Sometimes you may want to work with a repository that you do not maintain. It may use a programming language or build system that you do not know well. You may also be unsure what the code will do when it runs. With Docker, you can run the code in a separate environment and mount only the folder you want to work on. This can reduce the risk of changing or damaging other files on your computer.
+
+Docker is also useful when you work with agentic tools. The model may suggest a wrong or dangerous command. For example, it may suggest a command that deletes files outside your project folder. Running the tool inside a container can limit what the tool can access.
+
+Docker isolation is helpful, but it is not perfect security. How to use Docker safely is outside the scope of this workshop. We can continue this discussion in \texttt{Devs \& Lattes}.
+
+\section{Takeaways}
+In this workshop, you learned the basic workflow: download a model, run it with an inference tool, and connect an application to it.
+
+llama.cpp is only one way to run a model locally. You can also try other tools, such as LM Studio or Ollama. Some of them provide a friendlier user interface and may be easier to use than the command line.
 \end{document}
