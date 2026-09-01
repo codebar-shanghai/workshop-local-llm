@@ -2,11 +2,19 @@ name: Build PDFs
 
 on:
   pull_request:
+    paths:
+      - "*.tex"
+      - "assets/**"
+      - ".github/workflows/build-pdf.yml"
   push:
     branches:
       - main
     tags:
       - "v*"
+    paths:
+      - "*.tex"
+      - "assets/**"
+      - ".github/workflows/build-pdf.yml"
   workflow_dispatch:
 
 permissions:
