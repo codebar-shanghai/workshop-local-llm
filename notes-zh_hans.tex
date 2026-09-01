@@ -4,32 +4,43 @@
 \documentclass[a4paper,12pt]{article}
 
 % Page layout.
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=0.9in]{geometry}
 \setlength{\parindent}{2em}
 \setlength{\parskip}{0pt}
+\usepackage{enumitem}
+\setlist[itemize]{itemsep=0pt, parsep=0pt, topsep=0.2em}
+\setlist[enumerate]{itemsep=0.1em, parsep=0pt, topsep=0.2em}
+\usepackage{multicol}
 
 % Fonts.
 \usepackage{fontspec}
 \usepackage[fontset=fandol]{ctex}
 \setmainfont{TeX Gyre Termes}
-\setmonofont{TeX Gyre Cursor}
+\setmonofont[Scale=0.85]{Noto Sans Mono}
+\newfontfamily{\treefont}{Noto Sans Mono}
 
 % Syntax-highlighted code blocks.
 % Compile with shell escape enabled when using minted.
 \usepackage{xcolor}
 \usepackage{minted}
 \setminted{
-  fontsize=\small,
+  fontsize=\footnotesize,
   breaklines=true,
   autogobble=true,
   frame=single,
-  framesep=2mm
+  framesep=1.5mm
 }
 
 % Clickable cross-references and links. Keep this near the end of the preamble.
 \usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
+\usepackage{xurl}
+\newcommand{\code}[1]{\texttt{\nolinkurl{#1}}}
 
-\title{工作坊讲义：本地运行大语言模型}
+% for images
+\usepackage{graphicx}
+\usepackage{float}
+
+\title{在您的计算机上运行大语言模型}
 \author{Yang Shen}
 \date{}
 
@@ -39,10 +50,418 @@
 
 \section{概述}
 
-本文档演示如何在本地运行小型语言模型，并通过智能体命令行工具使用它。示例中使用 \texttt{llama.cpp} 作为本地推理运行时，Qwen3-0.6B 作为练习用的小型模型，以及 \texttt{pi} 作为智能体式交互的界面。
+本文档演示如何在您自己的计算机上运行一个小型语言模型。您还会使用 Pi\footnote{如果您听说过 OpenClaw，也就是“小龙虾”，Pi 是 OpenClaw 底层所依赖的工具。} 这个智能体命令行工具与模型交互。示例中使用 llama.cpp 来运行模型，并使用 Qwen3-0.6B 作为练习模型。
 
-本教程的目标不是构建速度最快或能力最强的本地 AI 系统，而是学习通用工作流：安装所需的工具、下载模型文件、启动本地模型服务器、将应用连接到它，并尝试一些任务。模型被故意选得较小，以便在普通个人电脑上即可操作。
+本教程的目标不是构建速度最快或能力最强的本地 AI 系统，而是学习通用工作流：安装工具、下载模型文件、启动本地模型服务器、将 Pi 这样的应用连接到这个模型服务器，并尝试一些任务。我们选择了一个小模型，所以本次工坊可以在大多数个人计算机上完成。
 
-本文档分为两个主要部分。快速入门部分给出从设置到运行本地模型的最短路径。后面的章节更详细地解释工具、文件格式、命令以及各种权衡。
+本文档分为两个主要部分。快速入门部分给出从准备运行环境到运行本地模型的最短路径。后面的章节更详细地解释工具、文件、命令和相关选择。
+
+本文档开源在 GitHub 上，并在 MIT 协议下发布。\footnote{\url{https://github.com/codebar-shanghai/workshop-local-llm}}\footnote{\url{https://github.com/codebar-shanghai/workshop-local-llm/blob/main/LICENSE}} 请查看 GitHub 仓库获取本文档的最新版本。
+
+\section{快速开始}
+
+如果您没有提前准备这些文件，我们会在工坊期间提供下载链接。
+
+\begin{multicols}{2}
+\begin{itemize}
+\item \texttt{Docker Desktop Installer.exe}
+\item \texttt{Docker.amd64.dmg}
+\item \texttt{Docker.arm64.dmg}
+\item \texttt{llama.cpp.arm64.tar.gz}
+\item \texttt{llama.cpp.tar.gz}
+\item \texttt{pi-docker-image.arm64.tar.gz}
+\item \texttt{pi-docker-image.tar.gz}
+\item \verb|Qwen3-0.6B-UD-IQ1_S.gguf|
+\item \verb|Qwen3-0.6B-UD-Q4_K_XL.gguf|
+\item \texttt{Qwen3-0.6B-BF16.gguf}
+\item \texttt{models.json}
+\end{itemize}
+\end{multicols}
+
+\subsection{安装 Docker}
+
+Docker 并非在本地运行语言模型的必需组件。我们在本次工坊中使用 Docker 来简化安装。一个 Docker 镜像就像是一个准备好的软件包，它包含了我们所需要的软件和设置，所以您不必手动安装每一项。
+
+同时 Docker 可以将本次工坊使用的工具和您计算机系统上的其他文件隔离开。工坊结束后，您可以轻松地删除镜像和容器。在第 \ref{sec:llama.cpp} 节我们将介绍如何不依赖 Docker 设置运行环境。在第 \ref{sec:Docker} 节我们也将讨论为什么 Docker 可能依然有用。
+
+\subsubsection{在 Windows 上安装 Docker Desktop}
+
+官方指南：\url{https://docs.docker.com/desktop/setup/install/windows-install/}。
+
+一般的步骤如下：
+
+\begin{enumerate}
+\item 安装 WSL。\footnote{WSL 是 Windows Subsystem for Linux 的缩写。它是 Windows 10 以及 11 的可选组件。在 Windows 上运行 Docker 依赖 WSL。本文中我们不会详细讨论 WSL，它超出了本次工坊的范畴。} 首先检查 WSL 是否已经安装。打开 PowerShell 或者\textbf{命令提示符}，然后输入这个命令：
+
+\begin{minted}{bash}
+wsl --version
+\end{minted}
+
+如果您看到“WSL 版本”，说明 WSL 已经安装。如未安装，请\textbf{以管理员身份运行} PowerShell 或者命令提示符，然后执行：
+
+\begin{minted}{bash}
+wsl --install
+\end{minted}
+
+这个步骤需要花点时间。在安装结束后，再次运行 \verb|wsl --version|。如果您看到了版本信息，可以继续下一步。如果出现错误，可以参考第 \ref{sec:llama.cpp} 节，了解如何直接使用 llama.cpp。
+
+\item 双击 \texttt{Docker Desktop Installer.exe}，使用默认选项（如图 \ref{fig:docker-windows-1} 所示），即 \textbf{Per-user installation} 和 \textbf{Use WSL2 instead of Hyper-V}。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{assets/docker-windows-1.png}
+\caption{Windows 版 Docker Desktop 安装程序}
+\label{fig:docker-windows-1}
+\end{figure}
+
+\item 安装完成后，打开 Docker Desktop。初次打开的时候您会看到一个登录界面，点击“跳过”，因为本次工坊并不需要登录。如果一切正常，您应该会看到图~\ref{fig:docker-windows-3} 的界面。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{assets/docker-windows-3.png}
+\caption{Docker Desktop}
+\label{fig:docker-windows-3}
+\end{figure}
+\end{enumerate}
+
+\subsubsection{在 macOS 上安装 Docker Desktop}
+
+官方指南：\url{https://docs.docker.com/desktop/setup/install/mac-install/}。
+
+请确保您的 macOS 操作系统已经更新到 \texttt{14.x}，并且您的 Mac 至少配备了 4 GB 的内存。接下来请选择正确的安装包。如果您的 Mac 使用 Apple silicon，也就是 M 系列芯片，请选择 \texttt{Docker Desktop for Mac With Apple silicon}。如果不是，请选择 \texttt{Docker Desktop for Mac with Intel chip}。
+
+\begin{enumerate}
+\item 双击下载的 \texttt{.dmg} 文件，将图标拖拽到 \textbf{Applications} 文件夹。
+\item 在 \textbf{Applications} 文件夹中双击 \texttt{Docker.app} 启动安装程序。
+\item 使用 \textbf{Use recommended settings} 也就是推荐设置。
+\item 在登录界面点击“跳过”，因为本次工坊并不需要登录。
+\item 最终您应该能看到和图~\ref{fig:docker-windows-3} 类似的界面。
+\end{enumerate}
+
+\subsubsection{在 Linux 上安装 Docker Engine}
+
+请参考官方指南 \url{https://docs.docker.com/engine/install/}。
+
+安装完成后，您通常需要搭配 \texttt{sudo} 来执行 Docker 命令。如果您不希望每次都输入 \texttt{sudo}，请参考官方指南 \url{https://docs.docker.com/engine/install/linux-postinstall/}。
+
+\subsection{下载和导入 Docker 镜像}
+
+如果您使用搭载 Apple silicon 的 Mac 计算机，请下载 \code{llama.cpp.arm64.tar.gz} 和 \code{pi-docker-image.arm64.tar.gz}。对于其他计算机，请下载 \code{llama.cpp.tar.gz} 和 \code{pi-docker-image.tar.gz}。
+
+接下来请打开终端。对于 Windows 操作系统，您可以使用 PowerShell 或者命令提示符。执行以下命令：
+
+\begin{minted}{bash}
+# 对于搭载了 Apple silicon 的 Mac 计算机
+docker load < llama.cpp.arm64.tar.gz
+docker load < pi-docker-image.arm64.tar.gz
+
+# 对于其他计算机
+docker load < llama.cpp.tar.gz
+docker load < pi-docker-image.tar.gz
+\end{minted}
+
+之后请执行 \verb|docker image ls|。您应该可以看到这两个镜像：
+
+\begin{itemize}
+\item \texttt{ghcr.io/ggml-org/llama.cpp:server}
+\item \texttt{ghcr.io/codebar-shanghai/pi-docker-image:latest}
+\end{itemize}
+
+\subsection{下载语言模型}
+
+本次工坊我们使用 Qwen3-0.6B。我们提供了三个文件：
+
+\begin{itemize}
+\item \texttt{Qwen3-0.6B-UD-Q4\_K\_XL.gguf}：优先使用这个文件。本文档中的命令均基于该文件。
+\item \texttt{Qwen3-0.6B-UD-IQ1\_S.gguf}：如果您的计算机无法运行 \texttt{Q4\_K\_XL}，则使用这个文件。您需要在运行模型的时候更新命令中的文件名。
+\item \texttt{Qwen3-0.6B-BF16.gguf}：如果您的计算机仍然有足够的剩余内存，您也可以在之后尝试这个文件。它保留了更高的精度，但需要更多的内存。
+\end{itemize}
+
+我们会在第 \ref{sec:gguf} 节解释名称的含义。
+
+\subsection{运行模型}
+\label{sec:run-llama.cpp}
+
+以下的命令被分为多行以便阅读。每一行结尾的 \texttt{\textbackslash} 表示下一行继续。您可以去掉这些 \texttt{\textbackslash} 字符，把命令写成一行。
+
+如果您使用 Windows 系统并将模型文件存放在 \texttt{c:\textbackslash{}models} 文件夹中，使用这条命令。如果您使用了和示例不同的文件夹，请将 \texttt{c:\textbackslash{}models} 替换为正确的文件夹。
+
+\begin{minted}{bash}
+docker run --rm -it \
+  -p 8080:8080 \
+  -v "c:\models:/models" \
+  ghcr.io/ggml-org/llama.cpp:server \
+  -m /models/Qwen3-0.6B-UD-Q4_K_XL.gguf \
+  -c 32768 \
+  --port 8080
+\end{minted}
+
+如果您使用 Linux 或者 macOS，并将模型文件放在 \texttt{\$HOME/models}\footnote{\textbf{\texttt{\$HOME}} 代表您的个人主目录。}，请执行以下命令。如果您使用了和示例不同的文件夹存放模型文件，请将 \texttt{\$HOME/models} 替换为正确的文件夹。
+
+\begin{minted}{bash}
+docker run --rm -it \
+  -p 8080:8080 \
+  -v "$HOME/models:/models" \
+  ghcr.io/ggml-org/llama.cpp:server \
+  -m /models/Qwen3-0.6B-UD-Q4_K_XL.gguf \
+  -c 32768 \
+  --port 8080
+\end{minted}
+
+简单解释一下这个命令。\texttt{ghcr.io/ggml-org/llama.cpp:server} 是您刚刚导入的镜像。在它前面的选项作用于 \texttt{docker}。它后面的选项则作用于 \texttt{llama.cpp}。
+
+\textbf{\texttt{docker}} 的选项：
+
+\begin{itemize}
+\item \texttt{-p} 将容器的端口发布到您的计算机上。\texttt{8080:8080} 中，冒号之前的数字表示您计算机上的端口，之后的数字表示容器内的端口。如果您计算机上的 \texttt{8080} 端口已被使用，可以尝试其他端口，例如 \texttt{8081}，那么这个选项应该写为 \texttt{-p \textbf{8081}:8080}。
+\item \texttt{-v} 将您计算机上的文件夹绑定到容器内的某个路径。和端口映射相似，冒号之前的是在您计算机上的文件夹路径，而之后的则是容器内的路径。例如在 Windows 系统上，如果您使用了其他的文件夹存放模型文件，您可以像这样替换 \texttt{-v "\textbf{c:\textbackslash{}the-actual-folder}:/models"}。
+\end{itemize}
+
+\textbf{\texttt{llama.cpp}} 的选项：
+
+\begin{itemize}
+\item \texttt{-m} 告诉服务器应该使用哪个模型文件。这个 Docker 镜像自身不包含模型文件，我们使用刚刚映射在 \texttt{/models} 路径下的文件。
+
+\item \texttt{-c} 设置上下文长度。更大的数值可以让模型读取更多输入，但对应的也会使用更多内存。在这个示例中，\texttt{32768} 代表 32K token。
+
+\item \texttt{--port} 告诉服务器监听哪个端口。在本次工坊中，我们使用 \texttt{8080} 端口。
+\end{itemize}
+
+接下来请打开您的浏览器，并访问 \url{http://localhost:8080}。您应该可以看到如图~\ref{fig:llama-ui} 所示的界面。这个聊天系统中的数据仅存放在您的浏览器中。
+
+\begin{figure}[htbp]
+\centering
+\fbox{\includegraphics[width=0.8\textwidth]{assets/llama-ui.png}}
+\caption{llama.cpp Web 界面}
+\label{fig:llama-ui}
+\end{figure}
+
+\subsection{智能体编程}
+
+现在让我们搭配这个本地模型使用 Pi。Pi 已经被安装在 \code{ghcr.io/codebar-shanghai/pi-docker-image:latest} 镜像中。我们将为它创建另一个容器。不过在那之前，我们需要先准备 Pi 的配置目录。
+
+您可以在任意位置创建一个文件夹，并给它任意的名字。在这个示例中，对于 Windows 系统，我使用 \texttt{c:\textbackslash{}pi-cfg}，在 Linux / macOS 上我使用 \texttt{\$HOME/pi-cfg}。
+
+在这个文件夹内再创建一个名为 \texttt{agent} 的文件夹，并将 \texttt{models.json} 文件放在 \texttt{agent} 文件夹中。最终的目录结构如下所示：
+
+\begin{minted}[formatcom=\treefont]{text}
+$HOME/pi-cfg
+└── agent
+    └── models.json
+\end{minted}
+
+我们会在第 \ref{sec:api} 节解释 \texttt{models.json}。现在让我们启动 Pi 的容器。如果您使用 macOS，请使用：
+
+\begin{minted}{bash}
+docker run --rm -it \
+  -v "$HOME/pi-cfg:/root/.pi" \
+  ghcr.io/codebar-shanghai/pi-docker-image:latest \
+  bash
+\end{minted}
+
+如果您使用 Windows，请使用：
+
+\begin{minted}{bash}
+docker run --rm -it \
+  -v "c:\pi-cfg:/root/.pi" \
+  ghcr.io/codebar-shanghai/pi-docker-image:latest \
+  bash
+\end{minted}
+
+如果您使用 Linux，请使用：
+
+\begin{minted}{bash}
+docker run --rm -it \
+  --add-host=host.docker.internal:host-gateway \
+  -v "$HOME/pi-cfg:/root/.pi" \
+  ghcr.io/codebar-shanghai/pi-docker-image:latest \
+  bash
+\end{minted}
+
+容器启动之后，请继续执行以下的命令，然后您应该可以看到如图~\ref{fig:starting-pi} 所示的欢迎信息。
+
+\begin{minted}{bash}
+# 这是之后的工作目录
+mkdir helloworld-js
+
+# 现在进入工作目录
+cd helloworld-js
+
+# 启动 Pi
+pi
+\end{minted}
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[]{assets/pi-welcome.png}}
+\caption{创建工作目录并启动 Pi}
+\label{fig:starting-pi}
+\end{figure}
+
+现在输入以下的提示词，并按下回车键：
+
+\begin{minted}{text}
+Create a helloworld Node.js file
+\end{minted}
+
+您应该能够看到和图~\ref{fig:pi-helloworld} 中相似的输出信息。
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[]{assets/pi-helloworld.png}}
+\caption{Pi 的输出}
+\label{fig:pi-helloworld}
+\end{figure}
+
+现在让我们来检查一下结果。输入 \verb|!ls| 后按下回车，会列出该工作目录下的文件。在我的示例中，Pi 创建了一个名为 \texttt{main.js} 的文件。
+
+接下来输入 \verb|!cat main.js| 显示文件内容。若一切正常，请输入 \verb|!node main.js| 运行它。
+
+这里感叹号 \texttt{!} 告诉 Pi 接下来是一个 shell 命令。按下回车后，Pi 会把提示符变成美元符号，表示它正在运行 shell 命令。
+
+\begin{minted}{text}
+$ ls
+main.js
+
+$ cat main.js
+
+const fs = require('fs');
+
+// This is a sample hello world
+console.log('Hello, World!');
+
+$ node main.js
+
+Hello, World!
+\end{minted}
+
+如果您略微了解 Node.js，您可能留意到 \texttt{const fs ...} 并不需要。这是因为我们选用了一个小模型，它更容易运行，但也更容易犯错。您的结果可能和我的不同。我们会在第 \ref{sec:models} 节和第 \ref{sec:gguf} 节介绍更多有关模型的选择。
+
+\subsection{收尾工作}
+
+工坊结束后，您可以停止这些工具。
+
+在 Pi 的容器中，输入 \verb|/quit| 并按下回车，接着输入 \verb|exit| 并按下回车。
+
+对于 llama.cpp，请先切换回运行它的终端，然后按下 \texttt{Ctrl+C} 结束运行。
+
+如果您不再需要这些镜像，您可以使用以下的命令删除它们：
+
+\begin{minted}{bash}
+docker image rm ghcr.io/ggml-org/llama.cpp:server
+docker image rm ghcr.io/codebar-shanghai/pi-docker-image:latest
+\end{minted}
+
+同样，您也可以删除工坊期间下载的 \texttt{*.tar.gz} 文件、模型文件以及 \texttt{models.json} 文件。如果您不再需要 Docker，您也可以将其卸载。
+
+\section{工作原理}
+
+我也仍在学习大语言模型，但会尽量用简单的话解释一些主要概念。
+
+\subsection{llama.cpp}
+\label{sec:llama.cpp}
+
+机器学习领域里有三个关键的名词：模型、训练和推理。模型存放着系统学到了什么。训练指的是生成模型的过程。推理指的是使用模型产生输出的过程。
+
+llama.cpp 是一个推理工具，但它并不是唯一的选择。其他可用的工具有 vLLM、LM Studio 以及 Ollama。
+
+llama.cpp 创建之初的一个目标，是在不依赖 GPU 的情况下运行模型。这也是我们不需要特殊硬件的原因。之后，llama.cpp 也加入了对 GPU 和 NPU 的支持，比如 CUDA、Metal、Vulkan 和其他技术。
+
+llama.cpp 提供了编译好的可执行文件以及 Docker 镜像。如果您无法使用 Docker，或者不希望使用 Docker，也可以从 \url{https://github.com/ggml-org/llama.cpp/releases} 下载最新版本。解压后，从命令行启动 \texttt{llama-server}。您可以使用在第 \ref{sec:run-llama.cpp} 节介绍过的 llama.cpp 选项。
+
+\subsection{模型}
+\label{sec:models}
+
+这次工坊中我们使用的是 Qwen3-0.6B。Qwen （通义千问）是阿里云发布的开放权重语言模型家族。千问 3 发布于 2025 年，它有多个不同的模型大小，例如 0.6B 和 1.7B。0.6B 的含义是模型拥有 6 亿个参数。
+
+简单来说，参数指的是模型里存放的数字。更大的模型拥有更多的参数，通常能力更强，但是运行时也需要更多的资源。
+
+本小节剩余的内容属于选读范围，目的是帮您对当前可选的开放权重模型有一个大致印象。
+
+截至目前（2026 年 8 月），千问家族最新的模型包括：
+
+\begin{itemize}
+\item \texttt{Qwen3.6-36B-A3B} 发布于 2026 年 4 月。它是一个混合专家模型（MoE，\textbf{Mixture of Experts}）。您可以理解为在这个模型内部有很多较小的部分。整个模型一共有 256 个专家，但每个 token 只会使用其中 9 个。因此即便整个模型比较大，但每一步推理只会使用很小的一部分。
+\item \texttt{Qwen3.8-27B} 是一个稠密（dense）模型，发布于 2026 年 8 月，是 \texttt{Qwen3.6-27B} 的后续版本。稠密的含义是，推理过程中会使用所有的参数。想要运行这个模型，您很可能需要一块有大显存的显卡。
+\item \texttt{Qwen3.8-Flash-Next} 同样发布于 2026 年 8 月，被视为下一代千问 4 的预览版。
+\end{itemize}
+
+在 Hugging Face 上您还可以找到其他的开放权重模型。
+
+\begin{itemize}
+\item \texttt{Gemma} 来自 Google DeepMind。最新版是 Gemma 4，它同样有不同尺寸，其中包括一个混合专家模型 \texttt{26B A4B}。
+\item \texttt{DeepSeek} 的 \texttt{V4-Flash} 有 284B 个参数（其中 13B 是活跃的）。
+\item \texttt{GLM} 来自智谱。\texttt{GLM-5} 有 744B 个参数（其中 40B 是活跃的）。
+\item \texttt{Kimi} 来自月之暗面。\texttt{Kimi-K3} 有 2.8T 个参数（其中 104B 是活跃的）。
+\item \texttt{gpt-oss} 来自 OpenAI。它有两个尺寸。\texttt{gpt-oss-120b} 有 117B 个参数（其中 5.1B 是活跃的），而 \texttt{gpt-oss-20b} 有 21B 个参数（其中 3.6B 是活跃的）。有测评表示 \texttt{gpt-oss-120b} 的表现大约相当于 \texttt{o4-mini}。
+\item \texttt{Llama} 来自 Meta。\texttt{Llama 4} 也有两个尺寸。\texttt{Llama 4 Scout} 共有 109B 个参数，包含 17B 活跃参数和 16 个专家。\texttt{Llama 4 Maverick} 共有 400B 个参数，同样是 17B 个活跃参数，但有 128 个专家。
+\end{itemize}
+
+您可以通过浏览器访问 Hugging Face 下载模型文件。大模型通常由很多文件组成。Hugging Face 提供了一个名为 \texttt{hf} 的命令行工具来下载模型，您可以将这个过程理解成类似 \verb|git clone| 的模型下载方式。请查阅官方指南 \url{https://huggingface.co/docs/huggingface_hub/en/guides/cli}。
+
+\subsection{GGUF}
+\label{sec:gguf}
+
+大多数原始模型采用 PyTorch 使用的格式存放，这些文件通常以 \texttt{.safetensors} 为扩展名。llama.cpp 使用了另一种格式，叫作 \texttt{GGUF}。llama.cpp 项目中提供了将模型转换为 GGUF 格式的脚本。
+
+通常在格式转换后还有一步，叫量化（quantization）。原始模型通常使用高精度格式的数字，例如 32 位或者 16 位浮点型。量化使用更少的位来储存模型，比如它可以将 16 位的数字减少为 4 位。这个过程会减小模型文件，也可以加速推理，但代价是模型的准确性可能降低。
+
+本次工坊中我们提供了三个模型文件：
+
+\begin{itemize}
+\item \texttt{Qwen3-0.6B-BF16.gguf}：未量化的版本。
+\item \texttt{Qwen3-0.6B-UD-Q4\_K\_XL.gguf}：这个文件使用 4-bit 量化。在平衡文件大小和质量的时候，\texttt{Q4} 量化是一个常见的选项。\texttt{XL} 表示这种量化方式会使用较高精度保存更多的重要参数。另一个更常见的量化选择是 \texttt{Q4\_K\_M}。
+\item \texttt{Qwen3-0.6B-UD-IQ1\_S.gguf}：这个文件使用 1-bit 量化。\texttt{IQ1\_S} 非常小，所以它使用更少的内存，但它的输出质量可能更差。
+\end{itemize}
+
+Hugging Face 上同样托管了很多 GGUF 格式的模型。\texttt{ggml-org}\footnote{\url{https://huggingface.co/ggml-org}} 也发布了不少适用于 llama.cpp 的 GGUF 模型，例如 \texttt{gpt-oss-20b-GGUF}。\footnote{\url{https://huggingface.co/ggml-org/gpt-oss-20b-GGUF}}
+
+其他的组织也会发布 GGUF 格式的模型。在本次工坊使用的模型文件名称中 \texttt{UD} 代表的是 \textbf{Unsloth Dynamic}。\footnote{\url{https://unsloth.ai/docs/basics/dynamic-3.0-ggufs}} Unsloth AI 在 Hugging Face 上发布了很多量化后的模型。您可能会在网上很多有关本地大模型的讨论中看到 UD 版本。
+
+有些高级模型可能经过 1-bit 或 2-bit 量化后依旧很大，比如 \texttt{DeepSeek V4 Flash}。Salvatore Sanfilippo\footnote{GitHub ID \texttt{@antirez}，Redis 的作者} 创建了名叫 \texttt{ds4}\footnote{\url{https://github.com/antirez/ds4}} 的项目。这是一个主要针对 Apple silicon 优化的推理工具，可以在拥有 96 GB 或者更多内存的 Mac 上运行 2-bit 量化的 DeepSeek 模型。
+
+这也是第 \ref{sec:models} 节仅仅概要介绍模型的原因。我自己的计算机跑不了那些高级的大模型。有的时候我使用 \texttt{Qwen3.6-35B-A3B-UD-Q4\_K\_M.gguf}。它在运行中有 40 层神经网络，每一层有 256 个专家。llama.cpp 有一个很有用的选项 \texttt{--n-cpu-moe N}。这个选项会将前 N 层的 MoE 权重保存在 CPU 内存里。这样做可能会降低推理速度，但可以使用更大的上下文窗口。如果您有一块 8 GB 或者更多显存的显卡，以及 32 GB 或者更多内存，可以尝试搭配 \texttt{--n-cpu-moe} 运行量化的 \texttt{Qwen3.6-35B-A3B} 或者 \texttt{gemma-4-26B-A4B} 模型。
+
+如果您确实需要大模型推理，又不希望使用 Anthropic、OpenAI 或者 DeepSeek 的接口，您也可以在云上租用带有独立显卡的服务器。通常这些服务器按小时计费，您可以在运行结束后销毁它们。这通常比购买企业级显卡便宜很多。
+
+\subsection{OpenAI 兼容的接口}
+\label{sec:api}
+
+Pi 能和 llama.cpp 一起工作，原因是 llama.cpp 实现了 OpenAI 兼容的接口，而 \texttt{models.json} 告诉 Pi 如何连接到模型服务器。您可以在编辑器中打开 \texttt{models.json} 文件查看配置。您也可以访问 \url{https://pi.dev/docs/latest/models} 查看完整的配置说明。这里我们只看几个比较重要的设置：
+
+\begin{itemize}
+\item \texttt{api}：OpenAI 兼容的 API 并不是唯一被广泛使用的格式。如果您希望让 Pi 使用其他接口格式，请查阅 Pi 的文档。
+\item \texttt{baseUrl}：本次工坊中 llama.cpp 和 Pi 运行在同一台计算机上的不同容器内。如果您使用了不同的方式运行 llama.cpp 或者 Pi，您很可能需要更新这个 URL。
+\item \texttt{contextWindow} 以及 \texttt{maxTokens}：这些设置取决于您使用的模型，以及您如何运行模型。请依据实际情况调整这些数值。
+\end{itemize}
+
+OpenAI 兼容的接口让其他工具也可以用相似的方式连接到推理服务器。OpenCode、Copilot 以及 Qwen Code 等智能体工具也可以用类似的配置方式和 llama.cpp 协作。
+
+也有一些不是专门用于编程的工具：
+
+\begin{itemize}
+\item Open WebUI：一个类似 ChatGPT 界面的、通用的 Web 界面。
+\item AnythingLLM：带有 RAG 功能的知识助理。\footnote{RAG 指检索增强生成，retrieval-augmented generation。}
+\item Langflow：一个开源的、用于构建 AI 工作流的低代码平台。
+\end{itemize}
+
+因为这些工具我大多还没用过，因此本节仅仅简要介绍。
+
+\subsection{Docker}
+\label{sec:Docker}
+
+最后让我们来聊聊在运行本地语言模型的时候，Docker 为什么依然可能有用。
+
+有时候您可能需要在他人维护的代码仓库里做些改动。它可能使用了您不熟悉的编程语言或者构建系统。您并不确定在运行过程中代码都会做些什么。这种情况下，Docker 可以提供隔离的环境。您可以仅将需要使用的文件夹映射到容器中，这可以大大降低这些代码修改或者损坏您计算机上其他文件的风险。
+
+在使用智能体工具时，模型有可能会返回错误的、甚至危险的指令。例如模型可能让智能体删除项目文件夹以外的文件。将智能体运行在容器内可以限制智能体能访问的文件范围。
+
+Docker 的隔离机制很有用，但也不是绝对安全。不过关于 Docker 安全使用的讨论超出了本次工坊的范畴，我们可以在 \texttt{Devs \& Lattes} 继续讨论。
+
+\section{小结}
+
+在本次工坊中，您学到了最基本的流程：下载模型、借助推理工具运行模型，并将模型接入到一个应用程序。
+
+llama.cpp 只是在本地运行模型的方法之一。您也可以尝试其他工具，比如 LM Studio 或者 Ollama。有些工具提供了更友好的用户界面，可能比命令行更容易上手。
 
 \end{document}

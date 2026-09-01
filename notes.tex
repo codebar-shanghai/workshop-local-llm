@@ -83,7 +83,7 @@ The download links will be shared during the workshop.
 
 You do not have to use Docker to run an LLM locally. In this workshop, we use Docker to make setup easier. A Docker image is like a ready-made box. It already contains the tools and settings we need. You do not need to install each part by hand.
 
-Docker also keeps the workshop tools separate from the rest of your system. After the workshop, you can remove the images and containers easily. In a later section, we will introduce how to set up the runtime without Docker. We will also talk about why Docker can still be useful in Section~\ref{sec:Docker}.
+Docker also keeps the workshop tools separate from the rest of your system. After the workshop, you can remove the images and containers easily. In Section~\ref{sec:llama.cpp}, we will introduce how to set up the runtime without Docker. We will also talk about why Docker can still be useful in Section~\ref{sec:Docker}.
 
 \subsubsection{Install Docker Desktop on Windows}
 
@@ -106,7 +106,7 @@ wsl --install
 
 This might take some time. After the installation, run \verb|wsl --version| again. If it shows the version information, you can proceed to the next step. If an error blocks you from installing WSL, please refer to Section~\ref{sec:llama.cpp} to see how to run llama.cpp without Docker.
 
-\item Double-click \texttt{Docker Desktop Installer.exe}. Keep the default configuration:
+\item Double-click \texttt{Docker Desktop Installer.exe}. Keep the default configuration, shown in Figure~\ref{fig:docker-windows-1}:
 
 \begin{itemize}
 \item \textbf{Per-user installation} selected
@@ -117,6 +117,7 @@ This might take some time. After the installation, run \verb|wsl --version| agai
 \centering
 \includegraphics[width=0.8\textwidth]{assets/docker-windows-1.png}
 \caption{Docker Desktop Installer for Windows}
+\label{fig:docker-windows-1}
 \end{figure}
 
 \item After the installation, open Docker Desktop. The first time you open it, click \textbf{Skip}, because sign-in is not required. If everything works, you should see the interface shown in Figure~\ref{fig:docker-windows-3}.
@@ -149,7 +150,7 @@ Please follow the official guide for your Linux distribution: \url{https://docs.
 
 After installation, you may need to run Docker commands with \texttt{sudo}. If you want to run \texttt{docker} without \texttt{sudo}, follow the Linux post-installation guide: \url{https://docs.docker.com/engine/install/linux-postinstall/}
 
-\subsection{Download and Import the Docker images}
+\subsection{Download and Import the Docker Images}
 
 If you use a Mac with Apple silicon, download \code{llama.cpp.arm64.tar.gz} and \code{pi-docker-image.arm64.tar.gz}. For other computers, download \code{llama.cpp.tar.gz} and \code{pi-docker-image.tar.gz}.
 
@@ -244,11 +245,11 @@ Then open your browser and go to \url{http://localhost:8080}. You should see the
 
 \subsection{Agentic Coding}
 
-Now let's use \texttt{pi} with the local language model.
+Now let's use \textbf{Pi} with the local language model.
 
 Pi is installed in the image \code{ghcr.io/codebar-shanghai/pi-docker-image:latest}. We will start it in another Docker container. Before we start the container, we need to prepare a configuration directory for Pi.
 
-Create a folder for the Pi configuration. You can put it anywhere, and give it any name. In this example, I will use \texttt{c:\textbackslash{}pi-cfg} on Windows and \texttt{\textasciitilde{}/pi-cfg} on Linux / macOS.
+Create a folder for the Pi configuration. You can put it anywhere, and give it any name. In this example, I will use \texttt{c:\textbackslash{}pi-cfg} on Windows and \texttt{\$HOME/pi-cfg} on Linux / macOS.
 
 Inside this folder, create another folder named \texttt{\textbf{agent}}. Then put the \texttt{\textbf{models.json}} inside the \texttt{agent} folder. The final structure should look like this:
 
@@ -345,13 +346,13 @@ $ node main.js
 Hello, World!
 \end{minted}
 
-If you know a little Node.js, you may notice that \texttt{const fs ...} is not needed in my result. This can happen because we are using a small model. Small models are easier to run, but they can make more mistakes. Your result may also look different from mine. We will talk more about models in the next chapter.
+If you know a little Node.js, you may notice that \texttt{const fs ...} is not needed in my result. This can happen because we are using a small model. Small models are easier to run, but they can make more mistakes. Your result may also look different from mine. We will talk more about models in Section~\ref{sec:models} and Section~\ref{sec:gguf}.
 
 \subsection{Stop and Clean Up}
 
 When you finish the workshop, you can stop the running tools.
 
-In the Pi container, type \verb|/quit| and then type \verb|exit|.
+In the Pi container, type \verb|/quit| and press Enter. Then type \verb|exit| and press Enter.
 
 For the llama.cpp server container, go back to the terminal where it is running. Press \texttt{Ctrl+C} to stop it.
 
@@ -393,7 +394,7 @@ Some recent models from the Qwen family (in 2026) are:
 \begin{itemize}
 \item \texttt{Qwen3.6-36B-A3B}. It was released in April 2026. This is a \textbf{MoE} model. MoE stands for \textbf{Mixture of Experts}. You can think of experts as smaller parts inside the model. This model has 256 experts, but only 9 are active for each token. So the full model is large, but each step only uses part of it.
 \item \texttt{Qwen3.8-27B}. It is a \textbf{dense} model released in August 2026, a successor to \texttt{Qwen3.6-27B}. Dense means the model uses all its parameters during inference. To run this model, you probably need a GPU with a lot of VRAM.
-\item \texttt{Qwen3-Flash-Next}. It was also released in August 2026 and is considered a preview of \texttt{Qwen4}.
+\item \texttt{Qwen3.8-Flash-Next}. It was also released in August 2026 and is considered a preview of \texttt{Qwen4}.
 \end{itemize}
 
 There are other open-weight language models that you can find on Hugging Face.
@@ -450,9 +451,9 @@ OpenAI-compatible API means other tools can talk to inference tools that provide
 There are also tools that are not coding agents:
 
 \begin{itemize}
-\item Open WebUI: a general ChatGPT-like web interface
+\item Open WebUI: a general ChatGPT-like web interface.
 \item AnythingLLM: a knowledge assistant with RAG support.\footnote{RAG stands for retrieval-augmented generation.}
-\item Langflow: an open-source, low-code platform for building AI workflows
+\item Langflow: an open-source, low-code platform for building AI workflows.
 \end{itemize}
 
 This section is brief because I have not tried all of these tools yet.
