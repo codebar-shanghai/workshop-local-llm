@@ -383,7 +383,7 @@ llama.cpp 提供了编译好的可执行文件以及 Docker 镜像。如果您�
 \begin{itemize}
 \item \texttt{Qwen3.6-36B-A3B} 发布于 2026 年 4 月。它是一个混合专家模型（MoE，\textbf{Mixture of Experts}）。您可以理解为在这个模型内部有很多较小的部分。整个模型一共有 256 个专家，但每个 token 只会使用其中 9 个。因此即便整个模型比较大，但每一步推理只会使用很小的一部分。
 \item \texttt{Qwen3.8-27B} 是一个稠密（dense）模型，发布于 2026 年 8 月，是 \texttt{Qwen3.6-27B} 的后续版本。稠密的含义是，推理过程中会使用所有的参数。想要运行这个模型，您很可能需要一块有大显存的显卡。
-\item \texttt{Qwen3.8-Flash-Next} 同样发布于 2026 年 8 月，被视为下一代千问 4 的预览版。
+\item \texttt{Qwen3.8-Flash-Next} 同样发布于 2026 年 8 月，被视为下一代千问 4 的预览版。它拥有 125B 参数（其中 6B 是活跃的）。
 \end{itemize}
 
 在 Hugging Face 上您还可以找到其他的开放权重模型。
