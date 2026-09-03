@@ -19,7 +19,7 @@ Prompt: "please create a fully self-contained super mario game with only one sho
 
 ### Qwen3.8 version
 
-[mario-qwen3.8.html](./mario-qwen3.8.html)
+mario-qwen3.8.html [v1](./mario-qwen3.8.html) [v2](./mario-qwen3.8.v2.html) [v1(bug)](./mario-qwen3.8.v1.html)
 
 ![mario-qwen3.8](./assets/mario-qwen3.8.png)
 
