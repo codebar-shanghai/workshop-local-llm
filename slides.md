@@ -5,6 +5,26 @@
 
 
 
+## Mario
+
+Prompt: "please create a fully self-contained super mario game with only one short level, put everything inside mario.html inside the current directory"
+
+
+### GPT version
+
+[mario-gpt.html](./mario-gpt.html)
+
+![mario-gpt](./assets/mario-gpt.png)
+
+
+### Qwen3.8 version
+
+[mario-qwen3.8.html](./mario-qwen3.8.html)
+
+![mario-qwen3.8](./assets/mario-qwen3.8.png)
+
+
+
 ## Agenda
 
 1. Install Docker
