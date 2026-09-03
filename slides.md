@@ -7,7 +7,7 @@
 
 ## Mario
 
-Prompt: "please create a fully self-contained super mario game with only one short level, put everything inside mario.html inside the current directory"
+Prompt: "please create a fully self-contained super mario game with only one short level, put everything inside mario.html inside the current directory" [source](https://redd.it/1w4821c)
 
 
 ### GPT version
