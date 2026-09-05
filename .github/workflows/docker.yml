@@ -160,7 +160,7 @@ jobs:
             "$BASE_IMAGE:${IMAGE_TAG}-arm64"
 
       - name: Download platform release notes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: release-notes-*
           path: release-notes
