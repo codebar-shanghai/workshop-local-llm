@@ -380,6 +380,8 @@ llama.cpp 提供了编译好的可执行文件以及 Docker 镜像。如果您�
 
 非常大的开放权重模型同样存在。最近的例子包括 \texttt{Qwen3.8-2.4T-A95B}、\texttt{DeepSeek V4-Flash}、\texttt{GLM-5} 以及 \texttt{Kimi-K3}。了解这些模型是有用的，但如果您想在自己的计算机上运行模型，它们通常不是最合适的第一步。
 
+有些模型也是多模态模型。例如，所有 Gemma 4 模型都支持文本、图像和视频输入，而 \texttt{E2B}、\texttt{E4B} 和 \texttt{12B} 还支持音频。
+
 您可以通过浏览器访问 Hugging Face 下载模型文件。大模型通常由很多文件组成。Hugging Face 提供了一个名为 \texttt{hf} 的命令行工具来下载模型，您可以将这个过程理解成类似 \verb|git clone| 的模型下载方式。请查阅官方指南 \url{https://huggingface.co/docs/huggingface_hub/en/guides/cli}。
 
 \subsection{GGUF}
@@ -404,7 +406,7 @@ Hugging Face 上同样托管了很多已经转换为 GGUF 格式的模型。这�
 那么工坊结束后，您应该尝试哪个模型呢？我建议按照下面的流程：
 
 \begin{enumerate}
-\item 如果您有一台性能更强的计算机，可以先尝试中等大小的本地模型，例如 \texttt{Qwen3.8-27B}、\texttt{Qwen3.6-35B-A3B} 或者 \texttt{gemma-4-26B-A4B}。请从量化后的 GGUF 文件开始。如果模型无法放入内存，可以降低上下文长度，或者使用更小的量化文件。
+\item 如果您有一台性能更强的计算机，可以先尝试中等大小的本地模型，例如 \texttt{Qwen3.8-27B}、\texttt{Qwen3.6-35B-A3B} 或者 \texttt{gemma-4-26B-A4B}。\footnote{根据 Gemma 4 模型卡的表 1，加载 4-bit \texttt{gemma-4-26B-A4B} 大约需要 14.4 GB 的 GPU 或 TPU 内存。同一张表也列出了其他模型大小和量化级别的内存估算，所以选择模型时值得参考。请查看 \url{https://ai.google.dev/gemma/docs/core/model_card_4}。} 请从量化后的 GGUF 文件开始。如果模型无法放入内存，可以降低上下文长度，或者使用更小的量化文件。
 
 对于较大的模型，llama.cpp 的选项可能会带来明显差异。对于稠密模型，\texttt{-ngl} 控制有多少层会被放到 GPU 上运行。对于 MoE 模型，\texttt{--n-cpu-moe} 可以把一部分 MoE 权重保留在 CPU 内存里。这些选项可以帮助模型在有限的硬件上运行，但最佳数值取决于您的 GPU、显存、内存、模型大小、量化方式以及上下文长度。
 
