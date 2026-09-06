@@ -383,33 +383,15 @@ llama.cpp provides prebuilt binaries and Docker images. If you cannot use Docker
 \subsection{Models}
 \label{sec:models}
 
-In this workshop, we use \textbf{Qwen3-0.6B}. Qwen is a family of open-weight language models from Alibaba Cloud. Qwen3 was released in 2025. It has different model sizes, such as 0.6B and 1.7B. Here, 0.6B means 0.6 billion parameters.
+This workshop uses \textbf{Qwen3-0.6B}. Qwen is a family of open-weight language models from Alibaba Cloud. Qwen3 was released in 2025. It has different model sizes, such as 0.6B and 1.7B. Here, 0.6B means 0.6 billion parameters.
 
 In simple terms, parameters are the numbers stored inside a model. A larger model usually has more parameters. It may be more capable, but it also needs more memory and more computing power.
 
-The following content in this section is not required for this workshop. It is here to give you a rough map of the current open-weight model landscape.
+Models also have different architectures. A \textbf{dense} model uses all its parameters during inference. A \textbf{MoE} model, short for \textbf{Mixture of Experts}, has many expert parts, but only some of them are active for each token. For example, \texttt{Qwen3.6-35B-A3B} has 35B parameters in total, but only 3B are active for each token.
 
-Some recent models from the Qwen family (in 2026) are:
+Very large open-weight models also exist. Some recent examples include \texttt{Qwen3.8-2.4T-A95B}, \texttt{DeepSeek V4-Flash}, \texttt{GLM-5}, and \texttt{Kimi-K3}. These models are useful to know about, but they are usually not the best first step for running models on your own computer.
 
-\begin{itemize}
-\item \texttt{Qwen3.6-36B-A3B}. It was released in April 2026. This is a \textbf{MoE} model. MoE stands for \textbf{Mixture of Experts}. You can think of experts as smaller parts inside the model. This model has 256 experts, but only 9 are active for each token. So the full model is large, but each step only uses part of it.
-\item \texttt{Qwen3.8-27B}. It is a \textbf{dense} model released in August 2026, a successor to \texttt{Qwen3.6-27B}. Dense means the model uses all its parameters during inference. To run this model, you probably need a GPU with a lot of VRAM.
-\item \texttt{Qwen3.8-2.4T-A95B}. It has 2.4T parameters with 512 experts (95B activated).
-\item \texttt{Qwen3.8-Flash-Next}. It was also released in August 2026 and is considered a preview of \texttt{Qwen4}. It has 125B parameters (6B activated).
-\end{itemize}
-
-There are other open-weight language models that you can find on Hugging Face.
-
-\begin{itemize}
-\item \texttt{Gemma}, released by Google DeepMind. The latest version is 4, and it also comes in different sizes, including a MoE variant \texttt{26B A4B}.
-\item \texttt{DeepSeek}. The \texttt{V4-Flash} has 284B parameters (13B activated).
-\item \texttt{GLM}, released by Zhipu. \texttt{GLM-5} has 744B parameters (40B activated).
-\item \texttt{Kimi}, released by Moonshot AI. \texttt{Kimi-K3} has 2.8T parameters (104B activated).
-\item \texttt{gpt-oss}, released by OpenAI. It has two variants. \texttt{gpt-oss-120b} has 117B parameters (5.1B activated), and \texttt{gpt-oss-20b} has 21B parameters (3.6B activated). \texttt{gpt-oss-120b} performs around the same level as \texttt{o4-mini} on some benchmarks.
-\item \texttt{Llama}, released by Meta. \texttt{Llama 4} has two variants. \texttt{Llama 4 Scout} has 109B parameters in total, with 17B active parameters and 16 experts. \texttt{Llama 4 Maverick} has 400B parameters in total, also with 17B active parameters, but with 128 experts.
-\end{itemize}
-
-You can download the models from Hugging Face in your browser. Large models are often split into many files. Hugging Face also provides a command-line tool named \texttt{hf}. You can think of it as similar to \verb|git clone|, but for downloading models. See the official guide: \url{https://huggingface.co/docs/huggingface_hub/en/guides/cli}
+You can download the models from Hugging Face in your browser. Large models are often split into many files. Hugging Face also provides a command-line tool named \texttt{hf}. You can think of it as similar to \verb|git clone|, but for downloading models. See the official guide: \url{https://huggingface.co/docs/huggingface_hub/en/guides/cli}.
 
 \subsection{GGUF}
 \label{sec:gguf}
@@ -426,15 +408,23 @@ In this workshop, we provided three model files:
 \item \texttt{Qwen3-0.6B-UD-IQ1\_S.gguf}: this file is quantized to 1-bit. \texttt{IQ1\_S} is very small, so it needs less memory, but the output quality may be worse.
 \end{itemize}
 
-Hugging Face also hosts many models converted to GGUF. The \texttt{ggml-org} organization provides GGUF models for llama.cpp and related tools.\footnote{\url{https://huggingface.co/ggml-org}} For example, it provides \texttt{gpt-oss-20b-GGUF}.\footnote{\url{https://huggingface.co/ggml-org/gpt-oss-20b-GGUF}}
+Hugging Face also hosts many models that have already been converted to GGUF. That means you usually do not need to convert and quantize the model yourself. The \texttt{ggml-org} organization provides GGUF models for llama.cpp and related tools.\footnote{\url{https://huggingface.co/ggml-org}} For example, it provides \texttt{gpt-oss-20b-GGUF}.\footnote{\url{https://huggingface.co/ggml-org/gpt-oss-20b-GGUF}}
 
 Other groups also publish GGUF models. \texttt{UD} in the model names means \textbf{Unsloth Dynamic}.\footnote{\url{https://unsloth.ai/docs/basics/dynamic-3.0-ggufs}} Unsloth AI publishes many quantized models on Hugging Face. You may see many local LLM discussions that use UD variants.
 
-As an advanced example, some models are still very large even after 1-bit or 2-bit quantization. One example is \texttt{DeepSeek V4 Flash}. Salvatore Sanfilippo\footnote{Also known as \texttt{@antirez}, creator of Redis} created \texttt{ds4}\footnote{\url{https://github.com/antirez/ds4}}, an optimized inference project mainly for Apple silicon. It is designed to run 2-bit quantized DeepSeek models on Macs with 96 GB or more RAM.
+So what model should you try after the workshop? I suggest this flow:
 
-This is why Section~\ref{sec:models} only gives a brief overview. I do not have a powerful computer that can run most large language models. Sometimes I use \texttt{Qwen3.6-35B-A3B-UD-Q4\_K\_M.gguf}. It reports 40 layers and 256 routed experts per layer. llama.cpp has a useful option named \texttt{--n-cpu-moe N}. This option keeps the MoE weights of the first N layers in CPU memory. This may slow down inference, but it can make a larger context window possible. If you have a GPU with 8 GB or more VRAM, and 32 GB or more RAM, you can try a quantized model such as \texttt{Qwen3.6-35B-A3B} or \texttt{gemma-4-26B-A4B} with \texttt{--n-cpu-moe}.
+\begin{enumerate}
+\item If you have a more powerful computer, try a medium local model first, such as \texttt{Qwen3.8-27B}, \texttt{Qwen3.6-35B-A3B}, or \texttt{gemma-4-26B-A4B}. Start with a quantized GGUF file. If the model does not fit in memory, reduce the context size or use a smaller quantized file.
 
-You can also rent a cloud server with powerful dedicated GPUs if you need to run inference using large language models instead of using APIs from Anthropic, OpenAI or DeepSeek. These servers are usually billed hourly, so this can be cheaper than buying enterprise-grade GPUs.
+For larger models, llama.cpp options can make a big difference. For dense models, \texttt{-ngl} controls how many layers are offloaded to the GPU. For MoE models, \texttt{--n-cpu-moe} can keep some MoE weights in CPU memory. These options can help a model run on limited hardware, but the best values depend on your GPU, VRAM, RAM, model size, quantization, and context size.
+
+If you are not sure where to start, you can ask a language model to suggest llama.cpp settings for your hardware. Then test those settings, watch memory usage, and adjust them to move more work to the GPU if possible.
+
+\item If the model is still too slow or too large, try a smaller model. Smaller models may need clearer prompts, but they can still be useful for coding tasks. For example, the file size of \texttt{Qwen3.5-9B-UD-Q4\_K\_XL.gguf} is about 6 GB, and \texttt{gemma-4-E4B-it-UD-Q4\_K\_XL.gguf} is about 5 GB.\footnote{\texttt{it} stands for instruction-tuned. It means the model has been tuned to follow instructions.}
+
+\item You can also try a hybrid setup. For example, you can use a larger model to discuss a plan, then use a smaller local model to make the code changes. Some tools also provide cloud-backed models, so you can use larger models without running them fully on your own computer.
+\end{enumerate}
 
 \subsection{OpenAI-compatible API}
 \label{sec:api}

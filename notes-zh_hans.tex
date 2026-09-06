@@ -372,31 +372,13 @@ llama.cpp 提供了编译好的可执行文件以及 Docker 镜像。如果您�
 \subsection{模型}
 \label{sec:models}
 
-这次工坊中我们使用的是 Qwen3-0.6B。Qwen （通义千问）是阿里云发布的开放权重语言模型家族。千问 3 发布于 2025 年，它有多个不同的模型大小，例如 0.6B 和 1.7B。0.6B 的含义是模型拥有 6 亿个参数。
+这次工坊中我们使用的是 Qwen3-0.6B。Qwen（通义千问）是阿里云发布的开放权重语言模型家族。千问 3 发布于 2025 年，它有多个不同的模型大小，例如 0.6B 和 1.7B。0.6B 的含义是模型拥有 6 亿个参数。
 
 简单来说，参数指的是模型里存放的数字。更大的模型拥有更多的参数，通常能力更强，但是运行时也需要更多的资源。
 
-本小节剩余的内容属于选读范围，目的是帮您对当前可选的开放权重模型有一个大致印象。
+模型也有不同的架构。稠密（dense）模型在推理时会使用所有参数。混合专家模型（MoE，\textbf{Mixture of Experts}）包含许多专家部分，但每个 token 只会使用其中一部分。例如，\texttt{Qwen3.6-35B-A3B} 总共有 35B 参数，但每个 token 只会激活其中 3B。
 
-截至目前（2026 年 8 月），千问家族最新的模型包括：
-
-\begin{itemize}
-\item \texttt{Qwen3.6-36B-A3B} 发布于 2026 年 4 月。它是一个混合专家模型（MoE，\textbf{Mixture of Experts}）。您可以理解为在这个模型内部有很多较小的部分。整个模型一共有 256 个专家，但每个 token 只会使用其中 9 个。因此即便整个模型比较大，但每一步推理只会使用很小的一部分。
-\item \texttt{Qwen3.8-27B} 是一个稠密（dense）模型，发布于 2026 年 8 月，是 \texttt{Qwen3.6-27B} 的后续版本。稠密的含义是，推理过程中会使用所有的参数。想要运行这个模型，您很可能需要一块有大显存的显卡。
-\item \texttt{Qwen3.8-2.4T-A95B} 拥有 2.4T 参数和 512 个专家（其中 95B 是活跃的）。
-\item \texttt{Qwen3.8-Flash-Next} 同样发布于 2026 年 8 月，被视为下一代千问 4 的预览版。它拥有 125B 参数（其中 6B 是活跃的）。
-\end{itemize}
-
-在 Hugging Face 上您还可以找到其他的开放权重模型。
-
-\begin{itemize}
-\item \texttt{Gemma} 来自 Google DeepMind。最新版是 Gemma 4，它同样有不同尺寸，其中包括一个混合专家模型 \texttt{26B A4B}。
-\item \texttt{DeepSeek} 的 \texttt{V4-Flash} 有 284B 个参数（其中 13B 是活跃的）。
-\item \texttt{GLM} 来自智谱。\texttt{GLM-5} 有 744B 个参数（其中 40B 是活跃的）。
-\item \texttt{Kimi} 来自月之暗面。\texttt{Kimi-K3} 有 2.8T 个参数（其中 104B 是活跃的）。
-\item \texttt{gpt-oss} 来自 OpenAI。它有两个尺寸。\texttt{gpt-oss-120b} 有 117B 个参数（其中 5.1B 是活跃的），而 \texttt{gpt-oss-20b} 有 21B 个参数（其中 3.6B 是活跃的）。有测评表示 \texttt{gpt-oss-120b} 的表现大约相当于 \texttt{o4-mini}。
-\item \texttt{Llama} 来自 Meta。\texttt{Llama 4} 也有两个尺寸。\texttt{Llama 4 Scout} 共有 109B 个参数，包含 17B 活跃参数和 16 个专家。\texttt{Llama 4 Maverick} 共有 400B 个参数，同样是 17B 个活跃参数，但有 128 个专家。
-\end{itemize}
+非常大的开放权重模型同样存在。最近的例子包括 \texttt{Qwen3.8-2.4T-A95B}、\texttt{DeepSeek V4-Flash}、\texttt{GLM-5} 以及 \texttt{Kimi-K3}。了解这些模型是有用的，但如果您想在自己的计算机上运行模型，它们通常不是最合适的第一步。
 
 您可以通过浏览器访问 Hugging Face 下载模型文件。大模型通常由很多文件组成。Hugging Face 提供了一个名为 \texttt{hf} 的命令行工具来下载模型，您可以将这个过程理解成类似 \verb|git clone| 的模型下载方式。请查阅官方指南 \url{https://huggingface.co/docs/huggingface_hub/en/guides/cli}。
 
@@ -415,15 +397,23 @@ llama.cpp 提供了编译好的可执行文件以及 Docker 镜像。如果您�
 \item \texttt{Qwen3-0.6B-UD-IQ1\_S.gguf}：这个文件使用 1-bit 量化。\texttt{IQ1\_S} 非常小，所以它使用更少的内存，但它的输出质量可能更差。
 \end{itemize}
 
-Hugging Face 上同样托管了很多 GGUF 格式的模型。\texttt{ggml-org}\footnote{\url{https://huggingface.co/ggml-org}} 也发布了不少适用于 llama.cpp 的 GGUF 模型，例如 \texttt{gpt-oss-20b-GGUF}。\footnote{\url{https://huggingface.co/ggml-org/gpt-oss-20b-GGUF}}
+Hugging Face 上同样托管了很多已经转换为 GGUF 格式的模型。这意味着您通常不需要自己转换和量化模型。\texttt{ggml-org}\footnote{\url{https://huggingface.co/ggml-org}} 也发布了不少适用于 llama.cpp 的 GGUF 模型，例如 \texttt{gpt-oss-20b-GGUF}。\footnote{\url{https://huggingface.co/ggml-org/gpt-oss-20b-GGUF}}
 
 其他的组织也会发布 GGUF 格式的模型。在本次工坊使用的模型文件名称中 \texttt{UD} 代表的是 \textbf{Unsloth Dynamic}。\footnote{\url{https://unsloth.ai/docs/basics/dynamic-3.0-ggufs}} Unsloth AI 在 Hugging Face 上发布了很多量化后的模型。您可能会在网上很多有关本地大模型的讨论中看到 UD 版本。
 
-有些高级模型可能经过 1-bit 或 2-bit 量化后依旧很大，比如 \texttt{DeepSeek V4 Flash}。Salvatore Sanfilippo\footnote{GitHub ID \texttt{@antirez}，Redis 的作者} 创建了名叫 \texttt{ds4}\footnote{\url{https://github.com/antirez/ds4}} 的项目。这是一个主要针对 Apple silicon 优化的推理工具，可以在拥有 96 GB 或者更多内存的 Mac 上运行 2-bit 量化的 DeepSeek 模型。
+那么工坊结束后，您应该尝试哪个模型呢？我建议按照下面的流程：
 
-这也是第 \ref{sec:models} 节仅仅概要介绍模型的原因。我自己的计算机跑不了那些高级的大模型。有的时候我使用 \texttt{Qwen3.6-35B-A3B-UD-Q4\_K\_M.gguf}。它在运行中有 40 层神经网络，每一层有 256 个专家。llama.cpp 有一个很有用的选项 \texttt{--n-cpu-moe N}。这个选项会将前 N 层的 MoE 权重保存在 CPU 内存里。这样做可能会降低推理速度，但可以使用更大的上下文窗口。如果您有一块 8 GB 或者更多显存的显卡，以及 32 GB 或者更多内存，可以尝试搭配 \texttt{--n-cpu-moe} 运行量化的 \texttt{Qwen3.6-35B-A3B} 或者 \texttt{gemma-4-26B-A4B} 模型。
+\begin{enumerate}
+\item 如果您有一台性能更强的计算机，可以先尝试中等大小的本地模型，例如 \texttt{Qwen3.8-27B}、\texttt{Qwen3.6-35B-A3B} 或者 \texttt{gemma-4-26B-A4B}。请从量化后的 GGUF 文件开始。如果模型无法放入内存，可以降低上下文长度，或者使用更小的量化文件。
 
-如果您确实需要大模型推理，又不希望使用 Anthropic、OpenAI 或者 DeepSeek 的接口，您也可以在云上租用带有独立显卡的服务器。通常这些服务器按小时计费，您可以在运行结束后销毁它们。这通常比购买企业级显卡便宜很多。
+对于较大的模型，llama.cpp 的选项可能会带来明显差异。对于稠密模型，\texttt{-ngl} 控制有多少层会被放到 GPU 上运行。对于 MoE 模型，\texttt{--n-cpu-moe} 可以把一部分 MoE 权重保留在 CPU 内存里。这些选项可以帮助模型在有限的硬件上运行，但最佳数值取决于您的 GPU、显存、内存、模型大小、量化方式以及上下文长度。
+
+如果您不知道从哪里开始，可以让语言模型根据您的硬件建议 llama.cpp 的设置。然后测试这些设置，观察内存和显存使用情况，并在可能的情况下调整设置，让更多工作交给 GPU。
+
+\item 如果模型仍然太慢或者太大，可以尝试更小的模型。较小的模型可能需要更清楚的提示词，但它们仍然可以用于编程任务。例如，\texttt{Qwen3.5-9B-UD-Q4\_K\_XL.gguf} 的文件大小约为 6 GB，\texttt{gemma-4-E4B-it-UD-Q4\_K\_XL.gguf} 的文件大小约为 5 GB。\footnote{\texttt{it} 是 instruction-tuned 的缩写，表示这个模型经过了指令微调，更适合听懂并执行人的指令。}
+
+\item 您也可以尝试混合使用不同的模型。例如，先用较大的模型讨论计划，再用较小的本地模型修改代码。有些工具也提供云端模型，所以您可以使用更大的模型，而不需要完全在自己的计算机上运行它们。
+\end{enumerate}
 
 \subsection{OpenAI 兼容的接口}
 \label{sec:api}
