@@ -24,6 +24,13 @@ mario-qwen3.8.html [v1](./mario-qwen3.8.html) [v2](./mario-qwen3.8.v2.html) [v1(
 ![mario-qwen3.8](./assets/mario-qwen3.8.png)
 
 
+### Pac-Man (Qwen3.8)
+
+[pacman.html](./pacman.html)
+
+![pacman](./assets/pacman-qwen3.8.png)
+
+
 
 ## Agenda
 
