@@ -80,9 +80,9 @@
 
 \subsection{安装 Docker}
 
-Docker 并非在本地运行语言模型的必需组件。我们在本次工坊中使用 Docker 来简化安装。一个 Docker 镜像就像是一个准备好的软件包，它包含了我们所需要的软件和设置，所以您不必手动安装每一项。
+Docker 并非在本地运行语言模型的必需组件。我们在本次工坊中使用 Docker 来简化安装。一个 Docker 镜像就像准备好的软件包，已经包含所需的软件和设置，所以您不必手动安装每一项。
 
-同时 Docker 可以将本次工坊使用的工具和您计算机系统上的其他文件隔离开。工坊结束后，您可以轻松地删除镜像和容器。在第 \ref{sec:llama.cpp} 节我们将介绍如何不依赖 Docker 设置运行环境。在第 \ref{sec:Docker} 节我们也将讨论为什么 Docker 可能依然有用。
+同时 Docker 可以将本次工坊使用的工具和系统上的其他文件隔离开。工坊结束后，您可以轻松删除镜像和容器。在第 \ref{sec:llama.cpp} 节我们将介绍如何不依赖 Docker 设置运行环境。在第 \ref{sec:Docker} 节我们也将讨论为什么 Docker 可能依然有用。
 
 \subsubsection{在 Windows 上安装 Docker Desktop}
 
@@ -128,7 +128,7 @@ wsl --install
 
 官方指南：\url{https://docs.docker.com/desktop/setup/install/mac-install/}。
 
-请确保您的 macOS 操作系统已经更新到 \texttt{14.x}，并且您的 Mac 至少配备了 4 GB 的内存。接下来请选择正确的安装包。如果您的 Mac 使用 Apple silicon，也就是 M 系列芯片，请选择 \texttt{Docker Desktop for Mac With Apple silicon}。如果不是，请选择 \texttt{Docker Desktop for Mac with Intel chip}。
+请确保您的 macOS 已更新到 \texttt{14.x}，并且 Mac 至少有 4 GB 内存。接下来请选择正确的安装包。如果您的 Mac 使用 Apple silicon，也就是 M 系列芯片，请选择 \texttt{Docker Desktop for Mac With Apple silicon}。否则请选择 \texttt{Docker Desktop for Mac with Intel chip}。
 
 \begin{enumerate}
 \item 双击下载的 \texttt{.dmg} 文件，将图标拖拽到 \textbf{Applications} 文件夹。
@@ -196,7 +196,7 @@ docker run --rm -it \
   --port 8080
 \end{minted}
 
-如果您使用 Linux 或者 macOS，并将模型文件放在 \texttt{\$HOME/models}\footnote{\textbf{\texttt{\$HOME}} 代表您的个人主目录。}，请执行以下命令。如果您使用了和示例不同的文件夹存放模型文件，请将 \texttt{\$HOME/models} 替换为正确的文件夹。
+如果您使用 Linux 或者 macOS，并将模型文件放在 \texttt{\$HOME/models}\footnote{\textbf{\texttt{\$HOME}} 代表您的个人主目录。}，请执行以下命令。如果模型文件在其他文件夹，请将 \texttt{\$HOME/models} 替换为正确路径。
 
 \begin{minted}{bash}
 docker run --rm -it \
@@ -214,7 +214,7 @@ docker run --rm -it \
 
 \begin{itemize}
 \item \texttt{-p} 将容器的端口发布到您的计算机上。\texttt{8080:8080} 中，冒号之前的数字表示您计算机上的端口，之后的数字表示容器内的端口。如果您计算机上的 \texttt{8080} 端口已被使用，可以尝试其他端口，例如 \texttt{8081}，那么这个选项应该写为 \texttt{-p \textbf{8081}:8080}。
-\item \texttt{-v} 将您计算机上的文件夹绑定到容器内的某个路径。和端口映射相似，冒号之前的是在您计算机上的文件夹路径，而之后的则是容器内的路径。例如在 Windows 系统上，如果您使用了其他的文件夹存放模型文件，您可以像这样替换 \texttt{-v "\textbf{c:\textbackslash{}the-actual-folder}:/models"}。
+\item \texttt{-v} 将您计算机上的文件夹绑定到容器内的某个路径。和端口映射相似，冒号之前的是您计算机上的路径，之后的是容器内的路径。例如在 Windows 系统上，如果您使用了其他文件夹存放模型，可以像这样替换 \texttt{-v "\textbf{c:\textbackslash{}the-actual-folder}:/models"}。
 \end{itemize}
 
 \textbf{\texttt{llama.cpp}} 的选项：
@@ -335,7 +335,7 @@ $ node main.js
 Hello, World!
 \end{minted}
 
-如果您略微了解 Node.js，您可能留意到 \texttt{const fs ...} 并不需要。这是因为我们选用了一个小模型，它更容易运行，但也更容易犯错。您的结果可能和我的不同。我们会在第 \ref{sec:models} 节和第 \ref{sec:gguf} 节介绍更多有关模型的选择。
+如果您略微了解 Node.js，可能会留意到 \texttt{const fs ...} 并不需要。这是因为我们选用了小模型。它更容易运行，但也更容易犯错。您的结果可能和我的不同。我们会在第 \ref{sec:models} 节和第 \ref{sec:gguf} 节介绍更多模型选择。
 
 \subsection{收尾工作}
 
@@ -389,7 +389,7 @@ llama.cpp 提供了编译好的可执行文件以及 Docker 镜像。如果您�
 
 大多数原始模型采用 PyTorch 使用的格式存放，这些文件通常以 \texttt{.safetensors} 为扩展名。llama.cpp 使用了另一种格式，叫作 \texttt{GGUF}。llama.cpp 项目中提供了将模型转换为 GGUF 格式的脚本。
 
-通常在格式转换后还有一步，叫量化（quantization）。原始模型通常使用高精度格式的数字，例如 32 位或者 16 位浮点型。量化使用更少的位来储存模型，比如它可以将 16 位的数字减少为 4 位。这个过程会减小模型文件，也可以加速推理，但代价是模型的准确性可能降低。
+通常在格式转换后还有一步，叫量化（quantization）。原始模型通常使用高精度数字，例如 32 位或者 16 位浮点型。量化使用更少的位来储存模型权重，比如将 16 位数字减少为 4 位。这个过程会减小模型文件。一个 8B 模型在量化前可能仅权重就需要约 16 GB 内存，\footnote{假设这个模型用 16-bit，也就是 2 字节的数字保存每个参数，那么 $8 \mathrm{B}\ \mathrm{parameters} \times 2 \mathrm{bytes\ per\ parameter} = 16 \mathrm{GB}$。}但在量化为 4-bit 后，权重可能只需要约 4 GB 内存。\footnote{$8 \mathrm{B}\ \mathrm{parameters} \times 0.5 \mathrm{bytes\ per\ parameter} = 4 \mathrm{GB}$。}代价是模型的准确性可能降低。
 
 本次工坊中我们提供了三个模型文件：
 
@@ -408,9 +408,11 @@ Hugging Face 上同样托管了很多已经转换为 GGUF 格式的模型。这�
 \begin{enumerate}
 \item 如果您有一台性能更强的计算机，可以先尝试中等大小的本地模型，例如 \texttt{Qwen3.8-27B}、\texttt{Qwen3.6-35B-A3B} 或者 \texttt{gemma-4-26B-A4B}。\footnote{根据 Gemma 4 模型卡的表 1，加载 4-bit \texttt{gemma-4-26B-A4B} 大约需要 14.4 GB 的 GPU 或 TPU 内存。同一张表也列出了其他模型大小和量化级别的内存估算，所以选择模型时值得参考。请查看 \url{https://ai.google.dev/gemma/docs/core/model_card_4}。} 请从量化后的 GGUF 文件开始。如果模型无法放入内存，可以降低上下文长度，或者使用更小的量化文件。
 
-对于较大的模型，llama.cpp 的选项可能会带来明显差异。对于稠密模型，\texttt{-ngl} 控制有多少层会被放到 GPU 上运行。对于 MoE 模型，\texttt{--n-cpu-moe} 可以把一部分 MoE 权重保留在 CPU 内存里。这些选项可以帮助模型在有限的硬件上运行，但最佳数值取决于您的 GPU、显存、内存、模型大小、量化方式以及上下文长度。
+还要记住，模型文件并不是全部的内存成本。推理工具还需要内存存放上下文窗口和运行时开销。例如，对于 Llama 3 70B，一个长上下文请求（32K tokens）可能需要约 10 GB 用于 KV cache。\footnote{一个粗略估算是 $32768\ \mathrm{tokens}  \times 80\ \mathrm{layers} \times 2\ \mathrm{K/V} \times 8\ \mathrm{KV\ heads} \times 128\ \mathrm{head\ dim} \times 2\ \mathrm{bytes} \approx 10\ \mathrm{GB}$。参见 \url{https://learn.deeplearning.ai/courses/fast-and-efficient-llm-inference-with-vllm}。}
 
-如果您不知道从哪里开始，可以让语言模型根据您的硬件建议 llama.cpp 的设置。然后测试这些设置，观察内存和显存使用情况，并在可能的情况下调整设置，让更多工作交给 GPU。
+当内存紧张时，llama.cpp 有几个设置可以帮助您。降低上下文长度可以直接减少 KV cache 的内存用量。修改 \texttt{--cache-type-k} 和 \texttt{--cache-type-v} 也可以让 KV cache 使用更少内存。对于稠密模型，\texttt{-ngl} 控制有多少层会被放到 GPU 上运行。降低这个数值可以减少显存使用量，但推理可能变慢。对于 MoE 模型，\texttt{--n-cpu-moe} 可以把一部分 MoE 权重保留在 CPU 内存里。
+
+如果您不知道从哪里开始，可以让语言模型根据您的硬件建议 llama.cpp 的设置。然后测试这些设置，观察内存和显存使用情况，并在显存足够时调整设置，让更多工作交给 GPU。
 
 \item 如果模型仍然太慢或者太大，可以尝试更小的模型。较小的模型可能需要更清楚的提示词，但它们仍然可以用于编程任务。例如，\texttt{Qwen3.5-9B-UD-Q4\_K\_XL.gguf} 的文件大小约为 6 GB，\texttt{gemma-4-E4B-it-UD-Q4\_K\_XL.gguf} 的文件大小约为 5 GB。\footnote{\texttt{it} 是 instruction-tuned 的缩写，表示这个模型经过了指令微调，更适合听懂并执行人的指令。}
 
@@ -446,7 +448,7 @@ OpenAI 兼容的接口让其他工具也可以用相似的方式连接到推理�
 
 最后让我们来聊聊在运行本地语言模型的时候，Docker 为什么依然可能有用。
 
-有时候您可能需要在他人维护的代码仓库里做些改动。它可能使用了您不熟悉的编程语言或者构建系统。您并不确定在运行过程中代码都会做些什么。这种情况下，Docker 可以提供隔离的环境。您可以仅将需要使用的文件夹映射到容器中，这可以大大降低这些代码修改或者损坏您计算机上其他文件的风险。
+有时候您可能需要在他人维护的代码仓库里做些改动。它可能使用了您不熟悉的编程语言或者构建系统。您也不确定代码运行时会做什么。这种情况下，Docker 可以提供隔离环境。您可以只将需要使用的文件夹映射到容器中，这可以降低代码修改或损坏其他文件的风险。
 
 在使用智能体工具时，模型有可能会返回错误的、甚至危险的指令。例如模型可能让智能体删除项目文件夹以外的文件。将智能体运行在容器内可以限制智能体能访问的文件范围。
 
