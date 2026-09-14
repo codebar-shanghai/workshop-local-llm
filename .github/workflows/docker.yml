@@ -117,7 +117,7 @@ jobs:
           cat "release-notes-${{ matrix.suffix }}.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload platform release notes
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-notes-${{ matrix.suffix }}
           path: release-notes-${{ matrix.suffix }}.md
