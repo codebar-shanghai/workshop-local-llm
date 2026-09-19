@@ -46,9 +46,9 @@ mario-qwen3.8.html [v1](./mario-qwen3.8.html) [v2](./mario-qwen3.8.v2.html) [v1(
 
 <div class="docker-list">
 
-- [Docker Desktop Installer.exe](./files/Docker%20Desktop%20Installer.exe) <a class="link-checksum" href="https://desktop.docker.com/win/main/amd64/237512/checksums.txt" target="_blank">checksum</a>
-- [Docker Desktop for Mac With Apple silicon](./files/Docker.arm64.dmg) <a class="link-checksum" href="https://desktop.docker.com/mac/main/arm64/237512/checksums.txt" target="_blank">checksum</a>
-- [Docker Desktop for Mac With Intel chip](./files/Docker.amd64.dmg) <a class="link-checksum" href="https://desktop.docker.com/mac/main/amd64/237512/checksums.txt" target="_blank">checksum</a>
+- [Docker Desktop Installer.exe](./files/Docker%20Desktop%20Installer.exe) <a class="link-checksum" href="https://desktop.docker.com/win/main/amd64/239619/checksums.txt" target="_blank">checksum</a>
+- [Docker Desktop for Mac With Apple silicon](./files/Docker.arm64.dmg) <a class="link-checksum" href="https://desktop.docker.com/mac/main/arm64/239619/checksums.txt" target="_blank">checksum</a>
+- [Docker Desktop for Mac With Intel chip](./files/Docker.amd64.dmg) <a class="link-checksum" href="https://desktop.docker.com/mac/main/amd64/239619/checksums.txt" target="_blank">checksum</a>
 
 </div>
 
