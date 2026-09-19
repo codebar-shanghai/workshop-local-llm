@@ -5,6 +5,16 @@
 
 
 
+## Agenda
+
+1. Install Docker
+2. Import Docker images
+3. Download a model
+4. Run the model
+5. Use Pi (optional)
+
+
+
 ## Mario
 
 Prompt: "please create a fully self-contained super mario game with only one short level, put everything inside mario.html inside the current directory" [source](https://redd.it/1w4821c)
@@ -29,16 +39,6 @@ mario-qwen3.8.html [v1](./mario-qwen3.8.html) [v2](./mario-qwen3.8.v2.html) [v1(
 [pacman.html](./pacman.html)
 
 ![pacman](./assets/pacman-qwen3.8.png)
-
-
-
-## Agenda
-
-1. Install Docker
-2. Import Docker images
-3. Download a model
-4. Run the model
-5. Use Pi (optional)
 
 
 
